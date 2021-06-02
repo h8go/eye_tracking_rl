@@ -458,7 +458,7 @@ class DQNAgent(object):
             for y in range(84):
               if (x-1)%4==0 and (y-1)%4==0:
                 pi_prime = self._sess.run(self._net_outputs.q_values, {self.state_ph: perturbation.phi(self.state, x, y)})
-                saliency_map[int((x-1)/4)][int((y-1)/4)] = math.sqrt(np.sum( (pi[0]-pi_prime[0])**2 ))
+                saliency_map[int((x-1)/4)][int((y-1)/4)] = math.sqrt(np.sum( (pi-pi_prime)**2 ))
           # sys.exit()
           # plt.imshow(self.state[0,:,:,0], cmap='gray', vmin=0, vmax=255)
           # plt.show()
