@@ -164,7 +164,7 @@ class Runner(object):
                log_every_n=1,
                num_iterations=200,
                training_steps=250000,
-               evaluation_steps=125000,
+               evaluation_steps=1000,
                max_steps_per_episode=27000,
                clip_rewards=True):
     """Initialize the Runner object in charge of running a full experiment.
@@ -277,18 +277,7 @@ class Runner(object):
     initial_observation = self._environment.reset()
     return self._agent.begin_episode(initial_observation)
 
-  def _run_one_step(self, action):
-    """Executes a single step in the environment.
 
-    Args:
-      action: int, the action to perform in the environment.
-
-    Returns:
-      The observation, reward, and is_terminal values returned from the
-        environment.
-    """
-    observation, reward, is_terminal, _ = self._environment.step(action)
-    return observation, reward, is_terminal
 
   def _end_episode(self, reward, terminal=True):
     """Finalizes an episode run.

@@ -30,7 +30,7 @@ atari_lib.create_atari_environment.sticky_actions = True
 create_agent.agent_name = 'dqn'
 Runner.num_iterations = 200
 Runner.training_steps = 250000  # agent steps
-Runner.evaluation_steps = 125000  # agent steps
+Runner.evaluation_steps = 1000  # agent steps
 Runner.max_steps_per_episode = 27000  # agent steps
 
 WrappedReplayBuffer.replay_capacity = 1000000

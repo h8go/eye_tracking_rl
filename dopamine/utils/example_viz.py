@@ -44,6 +44,8 @@ from __future__ import print_function
 from absl import app
 from absl import flags
 from dopamine.utils import example_viz_lib
+from dopamine.utils import load_and_play_trained_agents
+import sys
 
 flags.DEFINE_string('agent', 'dqn', 'Agent to visualize.')
 flags.DEFINE_string('game', 'Breakout', 'Game to visualize.')
@@ -59,12 +61,34 @@ FLAGS = flags.FLAGS
 
 
 def main(_):
-  example_viz_lib.run(agent=FLAGS.agent,
-                      game=FLAGS.game,
-                      num_steps=FLAGS.num_steps,
-                      root_dir=FLAGS.root_dir,
-                      restore_ckpt=FLAGS.restore_checkpoint,
-                      use_legacy_checkpoint=FLAGS.use_legacy_checkpoint)
+  # WORKING !
+  # load_and_play_trained_agents.run(agent='rainbow',
+  #                     game='Pong',
+  #                     num_steps=1,
+  #                     root_dir='/home/hugo',
+  #                     restore_ckpt='/home/hugo/trained_agent/checkpoint/rainbow/Pong/lucid_rainbow_Pong_1_tf_ckpt-199',
+  #                     use_legacy_checkpoint=True)
+
+    # load_and_play_trained_agents.run(agent='rainbow',
+    #                   game='Freeway',
+    #                   num_steps=1,
+    #                   root_dir='/home/hugo',
+    #                   restore_ckpt='/home/hugo/trained_agent/checkpoint/rainbow/Tennis/tf_ckpt-199',
+    #                   use_legacy_checkpoint=True)
+
+  load_and_play_trained_agents.run(agent='dqn',
+                      game='Pong',
+                      num_steps=1,
+                      root_dir='/home/hugo',
+                      restore_ckpt='/home/hugo/trained_agent/checkpoint/dqn/Pong/1/lucid_dqn_Pong_1_tf_ckpt-199',
+                      use_legacy_checkpoint=True)
+
+  # load_and_play_trained_agents.run(agent=FLAGS.agent,
+  #                     game=FLAGS.game,
+  #                     num_steps=FLAGS.num_steps,
+  #                     root_dir=FLAGS.root_dir,
+  #                     restore_ckpt=FLAGS.restore_checkpoint,
+  #                     use_legacy_checkpoint=FLAGS.use_legacy_checkpoint)
 
 if __name__ == '__main__':
   app.run(main)

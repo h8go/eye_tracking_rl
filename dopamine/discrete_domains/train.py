@@ -54,8 +54,8 @@ def main(unused_argv):
   base_dir = FLAGS.base_dir
   gin_files = FLAGS.gin_files
   gin_bindings = FLAGS.gin_bindings
-  run_experiment.load_gin_configs(gin_files, gin_bindings)
-  runner = run_experiment.create_runner(base_dir)
+  run_experiment.load_gin_configs(FLAGS.gin_files, FLAGS.gin_bindings)
+  runner = run_experiment.create_runner(FLAGS.base_dir)
   runner.run_experiment()
 
 

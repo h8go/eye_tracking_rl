@@ -28,6 +28,11 @@ from dopamine.discrete_domains import atari_lib
 from dopamine.replay_memory import circular_replay_buffer
 import numpy as np
 import tensorflow as tf
+import matplotlib.pyplot as plt
+from dopamine.agents.dqn import perturbation
+import pdb
+import time
+import sys
 
 import gin.tf
 
@@ -346,11 +351,11 @@ class DQNAgent(object):
 
     if not self.eval_mode:
       self._train_step()
-
-    self.action = self._select_action()
+    step_number = 0
+    self.action = self._select_action(step_number)
     return self.action
 
-  def step(self, reward, observation):
+  def step(self, reward, observation, step_number):
     """Records the most recent transition and returns the agent's next action.
 
     We store the observation of the last time step since we want to store it
@@ -370,7 +375,7 @@ class DQNAgent(object):
       self._store_transition(self._last_observation, self.action, reward, False)
       self._train_step()
 
-    self.action = self._select_action()
+    self.action = self._select_action(step_number)
     return self.action
 
   def end_episode(self, reward):
@@ -384,30 +389,105 @@ class DQNAgent(object):
     """
     if not self.eval_mode:
       self._store_transition(self._observation, self.action, reward, True)
+  def end_episode(self, reward):
+      """Signals the end of the episode to the agent.
 
-  def _select_action(self):
-    """Select an action from the set of available actions.
+      We store the observation of the current time step, which is the last
+      observation of the episode.
 
-    Chooses an action randomly with probability self._calculate_epsilon(), and
-    otherwise acts greedily according to the current Q-value estimates.
+      Args:
+        reward: float, the last reward from the environment.
+      """
+      if not self.eval_mode:
+        self._store_transition(self._observation, self.action, reward, True)
 
-    Returns:
-       int, the selected action.
-    """
+  def _select_action(self, step_number):
+    # EPSILON
     if self.eval_mode:
       epsilon = self.epsilon_eval
+      epsilon = -1
     else:
       epsilon = self.epsilon_fn(
           self.epsilon_decay_period,
           self.training_steps,
           self.min_replay_history,
           self.epsilon_train)
+
+    if step_number==-1:
+      with open('state_saves3.pickle', 'wb') as f:
+        pickle.dump(self.state, f)
+      sys.exit()
+
     if random.random() <= epsilon:
-      # Choose a random action with probability epsilon.
+      # Choose a randnanaom action with probability epsilon.
       return random.randint(0, self.num_actions - 1)
+
     else:
       # Choose the action with highest Q-value at the current state.
+      # print("action selected with highest Q-value")
+
+      pi = self._sess.run(self._net_outputs.q_values, {self.state_ph: self.state})
+
+
+      # FULL RESOLUTION SALIENCY MAP
+      # if step_number>10:
+      #   print("calcul saliency map")
+      #   saliency_map = np.zeros((84,84))
+      #   for x in range(84):
+      #     print("x image", x)
+      #     for y in range(84):
+      #       pi_prime = self._sess.run(self._net_outputs.q_values, {self.state_ph: perturbation.phi(self.state, x, y)})
+      #       saliency_map[x][y] = math.sqrt(np.sum( (pi[0]-pi_prime[0])**2 ))
+      #
+      #   plt.imshow(saliency_map, cmap='gray', vmin=0, vmax=np.max(saliency_map))
+      #   plt.show()
+
+      if step_number == 500:
+        pdb.set_trace()
+
+      # QUARTER RESOLUTION SALIENCY MAP
+      if False:
+        if step_number > 900 and step_number < 1000:
+
+          # pdb.set_trace()
+          # time.sleep(5)
+          print("calcul saliency map")
+          saliency_map = np.zeros((21,21))
+          for x in range(84):
+            print("x image", x)
+            for y in range(84):
+              if (x-1)%4==0 and (y-1)%4==0:
+                pi_prime = self._sess.run(self._net_outputs.q_values, {self.state_ph: perturbation.phi(self.state, x, y)})
+                saliency_map[int((x-1)/4)][int((y-1)/4)] = math.sqrt(np.sum( (pi[0]-pi_prime[0])**2 ))
+          # sys.exit()
+          # plt.imshow(self.state[0,:,:,0], cmap='gray', vmin=0, vmax=255)
+          # plt.show()
+          plt.imshow(saliency_map, cmap='gray', vmin=0, vmax=np.max(saliency_map))
+          # plt.show()
+          plt.savefig("/home/hugo/saliency_maps/Rainbow-Tennis/saliency/perturbation_map"+str(step_number)+".png")
+
+          plt.imshow(self.state[0,:,:,3], cmap='gray', vmin=0, vmax=255)
+          plt.savefig("/home/hugo/saliency_maps/Rainbow-Tennis/state/state"+str(step_number)+".png")
+
       return self._sess.run(self._q_argmax, {self.state_ph: self.state})
+
+
+  # def _select_action(self):
+  #   if self.eval_mode:
+  #     epsilon = self.epsilon_eval
+  #   else:
+  #     epsilon = self.epsilon_fn(
+  #         self.epsilon_decay_period,
+  #         self.training_steps,
+  #         self.min_replay_history,
+  #         self.epsilon_train)
+  #   if random.random() <= epsilon:
+  #     print("action aléatoire")
+  #     # Choose a random action with probability epsilon.
+  #     return random.randint(0, self.num_actions - 1)
+  #   else:
+  #     # Choose the action with highest Q-value at the current state.
+  #     return self._sess.run(self._q_argmax, {self.state_ph: self.state})
 
   def _train_step(self):
     """Runs a single training step.

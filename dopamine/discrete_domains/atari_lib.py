@@ -51,6 +51,7 @@ import gym
 from gym.spaces.box import Box
 import numpy as np
 import tensorflow as tf
+import sys
 
 
 NATURE_DQN_OBSERVATION_SHAPE = (84, 84)  # Size of downscaled Atari 2600 frame.
@@ -368,6 +369,7 @@ class AtariPreprocessing(object):
     self.terminal_on_life_loss = terminal_on_life_loss
     self.frame_skip = frame_skip
     self.screen_size = screen_size
+
 
     obs_dims = self.environment.observation_space
     # Stores temporary observations used for pooling over two successive

@@ -54,11 +54,11 @@ class MyDQNAgent(dqn_agent.DQNAgent):
   def __init__(self, sess, num_actions, summary_writer=None):
     super(MyDQNAgent, self).__init__(sess, num_actions,
                                      summary_writer=summary_writer)
-    self.q_values = [[] for _ in range(num_actions)]
+    self.q_values = [[] for _ in range(num_actions)] # stockage
     self.rewards = []
 
   def step(self, reward, observation):
-    self.rewards.append(reward)
+    self.rewards.append(reward) # stockage
     return super(MyDQNAgent, self).step(reward, observation)
 
   def _select_action(self):
@@ -143,9 +143,13 @@ class MyRunner(run_experiment.Runner):
                use_legacy_checkpoint=False):
     self._trained_agent_ckpt_path = trained_agent_ckpt_path
     self._use_legacy_checkpoint = use_legacy_checkpoint
+    print("on passe")
     super(MyRunner, self).__init__(base_dir, create_agent_fn)
 
   def _initialize_checkpointer_and_maybe_resume(self, checkpoint_file_prefix):
+    print('checkpoint_file_prefix', checkpoint_file_prefix)
+    print('self._trained_agent_ckpt_path', self._trained_agent_ckpt_path)
+    print('self._use_legacy_checkpoint', self._use_legacy_checkpoint)
     self._agent.reload_checkpoint(self._trained_agent_ckpt_path,
                                   self._use_legacy_checkpoint)
     self._start_iteration = 0
