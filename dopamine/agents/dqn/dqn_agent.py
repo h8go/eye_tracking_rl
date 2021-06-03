@@ -427,7 +427,11 @@ class DQNAgent(object):
       # print("action selected with highest Q-value")
 
       pi = self._sess.run(self._net_outputs.probabilities, {self.state_ph: self.state})
-
+      if step_number == 1:
+          q_node = self._net_outputs.q_values
+          g = tf.gradients(self._net_outputs.q_values)
+          sess.run(g, {self.state_ph : self.state})
+          sys.exit()
 
       # FULL RESOLUTION SALIENCY MAP
       # if step_number>10:
