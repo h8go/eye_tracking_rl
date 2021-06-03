@@ -429,8 +429,8 @@ class DQNAgent(object):
       pi = self._sess.run(self._net_outputs.probabilities, {self.state_ph: self.state})
       if step_number == 1:
           q_node = self._net_outputs.q_values
-          g = tf.gradients(self._net_outputs.q_values)
-          sess.run(g, {self.state_ph : self.state})
+          g = tf.gradients(self._net_outputs.q_values, self.state_ph)
+          self._sess.run(g, {self.state_ph : self.state})
           sys.exit()
 
       # FULL RESOLUTION SALIENCY MAP
