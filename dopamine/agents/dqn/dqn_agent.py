@@ -426,7 +426,7 @@ class DQNAgent(object):
       # Choose the action with highest Q-value at the current state.
       # print("action selected with highest Q-value")
 
-      pi = self._sess.run(self._net_outputs.q_values, {self.state_ph: self.state})
+      pi = self._sess.run(self._net_outputs.probabilities, {self.state_ph: self.state})
 
 
       # FULL RESOLUTION SALIENCY MAP
@@ -442,12 +442,12 @@ class DQNAgent(object):
       #   plt.imshow(saliency_map, cmap='gray', vmin=0, vmax=np.max(saliency_map))
       #   plt.show()
 
-      if step_number == 500:
-        pdb.set_trace()
+      # if step_number == 500:
+      #   pdb.set_trace()
 
       # QUARTER RESOLUTION SALIENCY MAP
-      if False:
-        if step_number > 900 and step_number < 1000:
+      if True:
+        if step_number > 900 and step_number < 950:
 
           # pdb.set_trace()
           # time.sleep(5)
@@ -457,17 +457,16 @@ class DQNAgent(object):
             print("x image", x)
             for y in range(84):
               if (x-1)%4==0 and (y-1)%4==0:
-                pi_prime = self._sess.run(self._net_outputs.q_values, {self.state_ph: perturbation.phi(self.state, x, y)})
-                saliency_map[int((x-1)/4)][int((y-1)/4)] = math.sqrt(np.sum( (pi-pi_prime)**2 ))
+                # gradient saliency map
           # sys.exit()
           # plt.imshow(self.state[0,:,:,0], cmap='gray', vmin=0, vmax=255)
           # plt.show()
           plt.imshow(saliency_map, cmap='gray', vmin=0, vmax=np.max(saliency_map))
           # plt.show()
-          plt.savefig("/home/hugo/saliency_maps/Rainbow-Tennis/saliency/perturbation_map"+str(step_number)+".png")
+          plt.savefig("/home/hugo/saliency_maps/Rainbow-pong5probabilities/saliency/perturbation_map"+str(step_number)+".png")
 
           plt.imshow(self.state[0,:,:,3], cmap='gray', vmin=0, vmax=255)
-          plt.savefig("/home/hugo/saliency_maps/Rainbow-Tennis/state/state"+str(step_number)+".png")
+          plt.savefig("/home/hugo/saliency_maps/Rainbow-pong5probabilities/state/state"+str(step_number)+".png")
 
       return self._sess.run(self._q_argmax, {self.state_ph: self.state})
 

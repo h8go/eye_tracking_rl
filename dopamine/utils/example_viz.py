@@ -62,12 +62,12 @@ FLAGS = flags.FLAGS
 
 def main(_):
   # WORKING !
-  # load_and_play_trained_agents.run(agent='rainbow',
-  #                     game='Pong',
-  #                     num_steps=1,
-  #                     root_dir='/home/hugo',
-  #                     restore_ckpt='/home/hugo/trained_agent/checkpoint/rainbow/Pong/lucid_rainbow_Pong_1_tf_ckpt-199',
-  #                     use_legacy_checkpoint=True)
+  load_and_play_trained_agents.run(agent='rainbow',
+                      game='Pong',
+                      num_steps=1,
+                      root_dir='/home/hugo',
+                      restore_ckpt='/home/hugo/trained_agent/checkpoint/rainbow/Pong/lucid_rainbow_Pong_1_tf_ckpt-199',
+                      use_legacy_checkpoint=True)
 
     # load_and_play_trained_agents.run(agent='rainbow',
     #                   game='Freeway',
@@ -76,12 +76,12 @@ def main(_):
     #                   restore_ckpt='/home/hugo/trained_agent/checkpoint/rainbow/Tennis/tf_ckpt-199',
     #                   use_legacy_checkpoint=True)
 
-  load_and_play_trained_agents.run(agent='dqn',
-                      game='Pong',
-                      num_steps=1,
-                      root_dir='/home/hugo',
-                      restore_ckpt='/home/hugo/trained_agent/checkpoint/dqn/Pong/1/lucid_dqn_Pong_1_tf_ckpt-199',
-                      use_legacy_checkpoint=True)
+  # load_and_play_trained_agents.run(agent='dqn',
+  #                     game='Pong',
+  #                     num_steps=1,
+  #                     root_dir='/home/hugo',
+  #                     restore_ckpt='/home/hugo/trained_agent/checkpoint/dqn/Pong/1/lucid_dqn_Pong_1_tf_ckpt-199',
+  #                     use_legacy_checkpoint=True)
 
   # load_and_play_trained_agents.run(agent=FLAGS.agent,
   #                     game=FLAGS.game,
