@@ -430,7 +430,11 @@ class DQNAgent(object):
       if step_number == 1:
           q_node = self._net_outputs.q_values
           g = tf.gradients(self._net_outputs.q_values, self.state_ph)
+          print(g)
+          import pdb
+          pdb.set_trace()
           self._sess.run(g, {self.state_ph : self.state})
+          # pi = self._sess.run(self._net_outputs.q_values, {self.state_ph: self.state})
           sys.exit()
 
       # FULL RESOLUTION SALIENCY MAP
