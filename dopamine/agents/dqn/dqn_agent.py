@@ -462,6 +462,7 @@ class DQNAgent(object):
             for y in range(84):
               if (x-1)%4==0 and (y-1)%4==0:
                 # gradient saliency map
+                pass
           # sys.exit()
           # plt.imshow(self.state[0,:,:,0], cmap='gray', vmin=0, vmax=255)
           # plt.show()
