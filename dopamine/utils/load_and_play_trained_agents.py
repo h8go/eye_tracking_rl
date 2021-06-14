@@ -243,12 +243,16 @@ class MyRunner(run_experiment.Runner):
         # print("une step effectuée")
         # print('screen_buffer', len(self._environment.screen_buffer))
         # self._environment.render('human')
+        # if step_number == 29:
+        #     image = self._environment.render('rgb_array')
+        #     plt.imshow(image)
+        #     plt.show()
         if True:
-            if step_number > 900 and step_number < 950:
+            if step_number > 800 and step_number < 900:
                 # self._environment.render('human')
                 image = self._environment.render('rgb_array')
                 plt.imshow(image)
-                plt.savefig("/home/hugo/saliency_maps/Rainbow-pong5probabilities/render/render"+str(step_number)+".png")
+                plt.savefig("/home/hugo/saliency_maps/DQN-pong/saliency_gradient2/render/render"+str(step_number)+".png")
         # image = self._environment.render('rgb_array')
         # plt.imshow(image)
         # plt.savefig("/home/hugo/render1.png")

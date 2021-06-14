@@ -31,6 +31,7 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 from dopamine.agents.dqn import perturbation
 import pdb
+import cv2
 import time
 import sys
 
@@ -426,38 +427,104 @@ class DQNAgent(object):
       # Choose the action with highest Q-value at the current state.
       # print("action selected with highest Q-value")
 
-      pi = self._sess.run(self._net_outputs.probabilities, {self.state_ph: self.state})
-      if step_number == 10:
-          q_node = self._net_outputs.q_values
-          print("yo")
-          # tf.gradients(self._net_outputs.q_values, self.state_ph)
-          # tf.gradients(self._net_outputs.q_values, {self.state_ph: self.state})
-          print(self.state)
-          import pdb
 
-          pdb.set_trace()
-          self._sess.run(g, {self.state_ph : self.state})
-          # pi = self._sess.run(self._net_outputs.q_values, {self.state_ph: self.state})
-          sys.exit()
+      # Saliency map using gradient method
+      if False:
+        if step_number > 800 and step_number < 900:
 
-      # FULL RESOLUTION SALIENCY MAP
-      # if step_number>10:
-      #   print("calcul saliency map")
-      #   saliency_map = np.zeros((84,84))
-      #   for x in range(84):
-      #     print("x image", x)
-      #     for y in range(84):
-      #       pi_prime = self._sess.run(self._net_outputs.q_values, {self.state_ph: perturbation.phi(self.state, x, y)})
-      #       saliency_map[x][y] = math.sqrt(np.sum( (pi[0]-pi_prime[0])**2 ))
-      #
-      #   plt.imshow(saliency_map, cmap='gray', vmin=0, vmax=np.max(saliency_map))
-      #   plt.show()
+          x = tf.cast(self.state_ph, tf.float32)
+
+          saliency = np.zeros((84, 84))
+          for idx_action in range(6):
+            with tf.GradientTape() as g:
+              g.watch(x)
+              y = self.online_convnet(x)[0][0][idx_action]
+            my_grad_action = g.gradient(y, x)
+            eval_grad = self._sess.run(my_grad_action, feed_dict={self.state_ph: self.state})
+            gradients_last_frame = eval_grad[0, :, :, 3]
+            # plt.imshow(gradients_last_frame, cmap='gray', vmin=0, vmax=np.max(gradients_last_frame))
+            # plt.show()
+            # grad_action.append(gradients_last_frame)
+            saliency = saliency + np.square(gradients_last_frame)
+
+          plt.imshow(saliency, cmap='gray', vmin=0, vmax=np.max(saliency))
+          plt.savefig("/home/hugo/saliency_maps/DQN-pong/saliency_gradient2/saliency/gradient_saliency"+str(step_number)+".png")
+
+
+      if True:
+        if step_number > 800 and step_number < 900:
+
+          x = tf.cast(self.state_ph, tf.float32)
+
+          # Gradient calculation
+          J = []
+          for idx_action in range(6):
+            with tf.GradientTape() as g:
+              g.watch(x)
+              y = self.online_convnet(x)[0][0][idx_action]
+            my_grad_action = g.gradient(y, x)
+            eval_grad = self._sess.run(my_grad_action, feed_dict={self.state_ph: self.state})
+            J.append(eval_grad)
+
+
+
+          # Saliency maps using gradient and projection method
+          saliency = np.zeros((84, 84))
+            # Création du mask
+          for i in range(84):
+            print(int(i/84*100)," % de la saliency map par gradient et projection", end='\r')
+            for j in range(84):
+              sigma_mask = 5
+              M = np.zeros((84,84))
+              for x in range(84):
+                for y in range(84):
+                  M[x][y] = np.exp(-( ( (x-i)**2 + (y-j)**2 ) / ( 2.0 * sigma_mask**2 ) ) )
+
+
+              delta = np.zeros(6)
+              sigma_blur = 3
+              for idx_action in range(6):
+                for idx_frame in range(4):
+                  A = cv2.GaussianBlur(self.state[0,:,:,idx_frame],(5,5), sigma_blur)
+                  dij_idx_frame = np.multiply(M, A-self.state[0,:,:,idx_frame])
+
+
+
+                  delta[idx_action] = delta[idx_action] + np.sum( np.multiply(J[idx_action][0,:,:,idx_frame], dij_idx_frame ))
+              saliency[i][j] = np.sqrt(np.sum(np.square(delta)))
+
+          plt.imshow(saliency, cmap='gray', vmin=0, vmax= np.amax(saliency))
+          plt.savefig("/home/hugo/saliency_maps/DQN-pong/saliency_maps_all/gradient_and_projection/gradient_projection_saliency"+str(step_number)+".png")
+
+          # Saliency maps using gradient only
+          saliency = np.zeros((84, 84))
+          for idx_action in range(6):
+            saliency = saliency + np.square(J[idx_action])
+          plt.imshow(saliency, cmap='gray', vmin=0, vmax=np.amax(saliency))
+          plt.savefig("/home/hugo/saliency_maps/DQN-pong/saliency_maps_all/gradient/gradient_saliency"+str(step_number)+".png")
+
+
+
+
+
+      # Full resolution saliency map using perturbation method
+      if True:
+        if step_number > 800 and step_number < 900:
+          saliency_map = np.zeros((84,84))
+          for x in range(84):
+            print(int(x/84*100), " % de la saliency map par perturbation", end='\r')
+            for y in range(84):
+              pi_prime = self._sess.run(self._net_outputs.q_values, {self.state_ph: perturbation.phi(self.state, x, y)})
+              saliency_map[x][y] = math.sqrt(np.sum( (pi[0]-pi_prime[0])**2 ))
+
+          plt.imshow(saliency_map, cmap='gray', vmin=0, vmax=np.max(saliency_map))
+          plt.show()
 
       # if step_number == 500:
       #   pdb.set_trace()
 
-      # QUARTER RESOLUTION SALIENCY MAP
-      if True:
+      # QUARTER RESOLUTION SALIENCY MAP using perturbation method
+      if False:
         if step_number > 900 and step_number < 950:
 
           # pdb.set_trace()
