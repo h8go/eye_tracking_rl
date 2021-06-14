@@ -499,10 +499,11 @@ class DQNAgent(object):
           # Saliency maps using gradient only
           saliency = np.zeros((84, 84))
           for idx_action in range(6):
-            saliency = saliency + np.square(J[idx_action])
+            for idx_frame in range(4):
+              saliency = saliency + np.square(J[idx_action][0,:,:,idx_frame])
           plt.imshow(saliency, cmap='gray', vmin=0, vmax=np.amax(saliency))
           plt.savefig("/home/hugo/saliency_maps/DQN-pong/saliency_maps_all/gradient/gradient_saliency"+str(step_number)+".png")
-
+          print("saliency map par gradient saved", end='\r')
 
 
 
@@ -518,7 +519,14 @@ class DQNAgent(object):
               saliency_map[x][y] = math.sqrt(np.sum( (pi[0]-pi_prime[0])**2 ))
 
           plt.imshow(saliency_map, cmap='gray', vmin=0, vmax=np.max(saliency_map))
-          plt.show()
+          plt.savefig("/home/hugo/saliency_maps/DQN-pong/saliency_maps_all/perturbation/perturbation"+str(step_number)+".png")
+
+      # Sauvegarde du state[3]
+      if True:
+        if step_number > 800 and step_number < 900:
+          plt.imshow(self.state[0,:,:,3], cmap='gray', vmin=0, vmax=255)
+          plt.savefig("/home/hugo/saliency_maps/DQN-pong/saliency_maps_all/state/state"+str(step_number)+".png")
+
 
       # if step_number == 500:
       #   pdb.set_trace()

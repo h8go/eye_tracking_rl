@@ -252,12 +252,7 @@ class MyRunner(run_experiment.Runner):
                 # self._environment.render('human')
                 image = self._environment.render('rgb_array')
                 plt.imshow(image)
-                plt.savefig("/home/hugo/saliency_maps/DQN-pong/saliency_gradient2/render/render"+str(step_number)+".png")
-        # image = self._environment.render('rgb_array')
-        # plt.imshow(image)
-        # plt.savefig("/home/hugo/render1.png")
-        # sys.exit()
-        # pdb.set_trace()
+                plt.savefig("/home/hugo/saliency_maps/DQN-pong/saliency_maps_all/render/render"+str(step_number)+".png")
         return observation, reward, is_terminal
 
 def create_dqn_agent(sess, environment, summary_writer=None):
