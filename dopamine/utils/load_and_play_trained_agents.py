@@ -49,6 +49,7 @@ import tensorflow as tf
 import tf_slim
 import pdb
 import matplotlib.pyplot as plt
+import sys
 
 
 class MyDQNAgent(dqn_agent.DQNAgent):
@@ -60,12 +61,12 @@ class MyDQNAgent(dqn_agent.DQNAgent):
         self.q_values = [[] for _ in range(num_actions)]
         self.rewards = []
 
-    def step(self, reward, observation, step_number):
+    def step(self, reward, observation, step_number, M):
         self.rewards.append(reward)
-        return super(MyDQNAgent, self).step(reward, observation, step_number)
+        return super(MyDQNAgent, self).step(reward, observation, step_number, M)
 
-    def _select_action(self, step_number):
-        action = super(MyDQNAgent, self)._select_action(step_number)
+    def _select_action(self, step_number, mask):
+        action = super(MyDQNAgent, self)._select_action(step_number, mask)
         # print("on selectionne ici")
         q_vals = self._sess.run(self._net_outputs.q_values,
                                 {self.state_ph: self.state})[0]
@@ -210,8 +211,16 @@ class MyRunner(run_experiment.Runner):
         action = self._initialize_episode()
         is_terminal = False
 
+        # Mask creation
+        sigma_mask = 5
+        M = np.zeros((252,252))
+        for x in range(252):
+          for y in range(252):
+            M[x][y] = np.exp(-( ( (x-126)**2 + (y-126)**2 ) / ( 2.0 * sigma_mask**2 ) ) )
+
         # Keep interacting until we reach a terminal state.
         while True:
+
           observation, reward, is_terminal = self._run_one_step(action, step_number)
 
           total_reward += reward
@@ -232,7 +241,7 @@ class MyRunner(run_experiment.Runner):
             self._end_episode(reward, is_terminal)
             action = self._agent.begin_episode(observation)
           else:
-            action = self._agent.step(reward, observation, step_number)
+            action = self._agent.step(reward, observation, step_number, M)
 
         self._end_episode(reward, is_terminal)
 
@@ -252,7 +261,7 @@ class MyRunner(run_experiment.Runner):
                 # self._environment.render('human')
                 image = self._environment.render('rgb_array')
                 plt.imshow(image)
-                plt.savefig("/home/hugo/saliency_maps/DQN-pong/saliency_maps_all/render/render"+str(step_number)+".png")
+                plt.savefig("/home/hugo/saliency_maps/DQN-pong/saliency_maps_all2/render/render"+str(step_number)+".png")
         return observation, reward, is_terminal
 
 def create_dqn_agent(sess, environment, summary_writer=None):

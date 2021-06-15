@@ -353,10 +353,11 @@ class DQNAgent(object):
     if not self.eval_mode:
       self._train_step()
     step_number = 0
-    self.action = self._select_action(step_number)
+    mask = np.zeros((252, 252))
+    self.action = self._select_action(step_number, mask)
     return self.action
 
-  def step(self, reward, observation, step_number):
+  def step(self, reward, observation, step_number, M):
     """Records the most recent transition and returns the agent's next action.
 
     We store the observation of the last time step since we want to store it
@@ -376,7 +377,9 @@ class DQNAgent(object):
       self._store_transition(self._last_observation, self.action, reward, False)
       self._train_step()
 
-    self.action = self._select_action(step_number)
+
+
+    self.action = self._select_action(step_number, M)
     return self.action
 
   def end_episode(self, reward):
@@ -402,7 +405,9 @@ class DQNAgent(object):
       if not self.eval_mode:
         self._store_transition(self._observation, self.action, reward, True)
 
-  def _select_action(self, step_number):
+  def _select_action(self, step_number, mask):
+
+
     # EPSILON
     if self.eval_mode:
       epsilon = self.epsilon_eval
@@ -470,16 +475,10 @@ class DQNAgent(object):
 
           # Saliency maps using gradient and projection method
           saliency = np.zeros((84, 84))
-            # Création du mask
           for i in range(84):
             print(int(i/84*100)," % de la saliency map par gradient et projection", end='\r')
             for j in range(84):
-              sigma_mask = 5
-              M = np.zeros((84,84))
-              for x in range(84):
-                for y in range(84):
-                  M[x][y] = np.exp(-( ( (x-i)**2 + (y-j)**2 ) / ( 2.0 * sigma_mask**2 ) ) )
-
+              M = mask[126-i:210-i, 126-j:210-j]
 
               delta = np.zeros(6)
               sigma_blur = 3
@@ -487,14 +486,12 @@ class DQNAgent(object):
                 for idx_frame in range(4):
                   A = cv2.GaussianBlur(self.state[0,:,:,idx_frame],(5,5), sigma_blur)
                   dij_idx_frame = np.multiply(M, A-self.state[0,:,:,idx_frame])
-
-
-
                   delta[idx_action] = delta[idx_action] + np.sum( np.multiply(J[idx_action][0,:,:,idx_frame], dij_idx_frame ))
               saliency[i][j] = np.sqrt(np.sum(np.square(delta)))
 
           plt.imshow(saliency, cmap='gray', vmin=0, vmax= np.amax(saliency))
-          plt.savefig("/home/hugo/saliency_maps/DQN-pong/saliency_maps_all/gradient_and_projection/gradient_projection_saliency"+str(step_number)+".png")
+          plt.savefig("/home/hugo/saliency_maps/DQN-pong/saliency_maps_all2/gradient_and_projection/gradient_projection_saliency"+str(step_number)+".png")
+          print("saliency map par gradient and projection saved")
 
           # Saliency maps using gradient only
           saliency = np.zeros((84, 84))
@@ -502,34 +499,32 @@ class DQNAgent(object):
             for idx_frame in range(4):
               saliency = saliency + np.square(J[idx_action][0,:,:,idx_frame])
           plt.imshow(saliency, cmap='gray', vmin=0, vmax=np.amax(saliency))
-          plt.savefig("/home/hugo/saliency_maps/DQN-pong/saliency_maps_all/gradient/gradient_saliency"+str(step_number)+".png")
-          print("saliency map par gradient saved", end='\r')
-
-
+          plt.savefig("/home/hugo/saliency_maps/DQN-pong/saliency_maps_all2/gradient/gradient_saliency"+str(step_number)+".png")
+          print("saliency map par gradient saved")
 
 
       # Full resolution saliency map using perturbation method
       if True:
+        pi = self._sess.run(self._net_outputs.q_values, {self.state_ph: self.state})
         if step_number > 800 and step_number < 900:
           saliency_map = np.zeros((84,84))
           for x in range(84):
             print(int(x/84*100), " % de la saliency map par perturbation", end='\r')
             for y in range(84):
-              pi_prime = self._sess.run(self._net_outputs.q_values, {self.state_ph: perturbation.phi(self.state, x, y)})
+              pi_prime = self._sess.run(self._net_outputs.q_values, {self.state_ph: perturbation.phi(self.state, x, y, mask)})
               saliency_map[x][y] = math.sqrt(np.sum( (pi[0]-pi_prime[0])**2 ))
 
           plt.imshow(saliency_map, cmap='gray', vmin=0, vmax=np.max(saliency_map))
-          plt.savefig("/home/hugo/saliency_maps/DQN-pong/saliency_maps_all/perturbation/perturbation"+str(step_number)+".png")
-
+          plt.savefig("/home/hugo/saliency_maps/DQN-pong/saliency_maps_all2/perturbation/perturbation"+str(step_number)+".png")
+          print("saliency map par perturbation")
       # Sauvegarde du state[3]
       if True:
         if step_number > 800 and step_number < 900:
           plt.imshow(self.state[0,:,:,3], cmap='gray', vmin=0, vmax=255)
-          plt.savefig("/home/hugo/saliency_maps/DQN-pong/saliency_maps_all/state/state"+str(step_number)+".png")
+          plt.savefig("/home/hugo/saliency_maps/DQN-pong/saliency_maps_all2/state/state"+str(step_number)+".png")
 
 
-      # if step_number == 500:
-      #   pdb.set_trace()
+
 
       # QUARTER RESOLUTION SALIENCY MAP using perturbation method
       if False:
