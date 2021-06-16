@@ -257,11 +257,11 @@ class MyRunner(run_experiment.Runner):
         #     plt.imshow(image)
         #     plt.show()
         if True:
-            if step_number > 800 and step_number < 900:
+            if step_number > 100 and step_number < 200:
                 # self._environment.render('human')
                 image = self._environment.render('rgb_array')
                 plt.imshow(image)
-                plt.savefig("/home/hugo/saliency_maps/DQN-pong/saliency_maps_all2/render/render"+str(step_number)+".png")
+                plt.savefig("/home/hugo/saliency_maps/DQN-pong/saliency_maps_gradient_projection/render/render"+str(step_number)+".png")
         return observation, reward, is_terminal
 
 def create_dqn_agent(sess, environment, summary_writer=None):
