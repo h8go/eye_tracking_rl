@@ -470,6 +470,8 @@ class DQNAgent(object):
           blur_minus_state = tf.Variable(tf.zeros(shape=[1, 1, 84, 84, 4], dtype=tf.float32))
           blur_minus_state[0, :, :, :, :].assign(tf.add(A, -self.state))
 
+          print(blur_minus_state)
+          sys.exit()
           # print(blur_minus_state.shape) # (1, 84, 84, 4)
 
           print('mask_tensor.shape', mask_tensor.shape)
