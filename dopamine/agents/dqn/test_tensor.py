@@ -61,6 +61,10 @@ import cv2
 # print(blur_minus_state)
 
 # Convert tensor to numpy
-A = tf.ones([2, 2])
-print(type(A))
-print(A.numpy())
+# A = tf.ones([2, 2])
+# print(type(A))
+# print(A.numpy())
+tf.compat.v1.disable_v2_behavior()
+a = tf.compat.v1.placeholder(shape=(2,2), dtype=tf.float32)
+c = tf.expand_dims(a, axis=0)
+print(c.shape)

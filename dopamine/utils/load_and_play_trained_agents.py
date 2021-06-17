@@ -220,14 +220,16 @@ class MyRunner(run_experiment.Runner):
             M[x][y] = np.exp(-( ( (x-126)**2 + (y-126)**2 ) / ( 2.0 * sigma_mask**2 ) ) )
 
 
-        mask_tensor = tf.Variable(tf.zeros(shape=[84, 84, 84, 84, 1], dtype=tf.float32))
+        # mask_tensor = tf.Variable(tf.zeros(shape=[84, 84, 84, 84, 1], dtype=tf.float32))
+        mask_tensor = tf.compat.v1.placeholder(tf.Variable(tf.zeros(shape=[84, 84, 84, 84, 1], dtype=tf.float32)))
         print('shape', mask_tensor.shape)
-        if False:
+        if True:
             for i in range(84):
               print("creation mask_tensor : ", i, end='\r')
               for j in range(84):
                 mask_tensor[i, j, :, :, 0].assign(M[126-i:210-i, 126-j:210-j])
             print()
+        pdb.set_trace()
 
 
         # Keep interacting until we reach a terminal state.
@@ -311,7 +313,7 @@ def run(agent, game, num_steps, root_dir, restore_ckpt,
   """
 
     tf.compat.v1.reset_default_graph()
-
+    tf.compat.v1.disable_v2_behavior()
     config = """
   atari_lib.create_atari_environment.game_name = '{}'
   WrappedReplayBuffer.replay_capacity = 300
