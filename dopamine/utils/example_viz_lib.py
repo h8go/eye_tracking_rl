@@ -261,6 +261,7 @@ def run(agent, game, num_steps, root_dir, restore_ckpt,
       checkpoint.
   """
   tf.compat.v1.reset_default_graph()
+
   config = """
   atari_lib.create_atari_environment.game_name = '{}'
   WrappedReplayBuffer.replay_capacity = 300

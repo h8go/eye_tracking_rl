@@ -28,6 +28,7 @@ from dopamine.discrete_domains import atari_lib
 from dopamine.replay_memory import circular_replay_buffer
 import numpy as np
 import tensorflow as tf
+tf.compat.v1.enable_eager_execution()
 import matplotlib.pyplot as plt
 from dopamine.agents.dqn import perturbation
 import pdb
@@ -405,9 +406,7 @@ class DQNAgent(object):
       if not self.eval_mode:
         self._store_transition(self._observation, self.action, reward, True)
 
-  def _select_action(self, step_number, mask):
-
-
+  def _select_action(self, step_number, mask_tensor):
     # EPSILON
     if self.eval_mode:
       epsilon = self.epsilon_eval
@@ -457,29 +456,53 @@ class DQNAgent(object):
 
 
       if True:
-        if step_number > 100 and step_number < 200:
+        if step_number > 10 and step_number < 200:
 
           # Saliency maps using gradient and projection method
-          saliency = np.zeros((84, 84))
           sigma_blur = 3
-          A = cv2.GaussianBlur(self.state[0,:,:,3],(5,5), sigma_blur)
-          blur_minus_state = A - self.state[0,:,:,3]
+          # on peut faire ça en convolution sans utiliser cv2
+          A = tf.Variable(tf.zeros(shape=[1, 1, 84, 84, 4], dtype=tf.float32))
+          for i in range(4):
+            A[0, 0, :, :, i].assign(cv2.GaussianBlur(self.state[0,:,:,i],(5,5), sigma_blur))
+
+          # print('A.shape', A.shape)
+          # print('self.state.shape', self.state.shape)
+          blur_minus_state = tf.Variable(tf.zeros(shape=[1, 1, 84, 84, 4], dtype=tf.float32))
+          blur_minus_state[0, :, :, :, :].assign(tf.add(A, -self.state))
+
+          # print(blur_minus_state.shape) # (1, 84, 84, 4)
+
+          print('mask_tensor.shape', mask_tensor.shape)
+          print('blur_minus_state.shape', blur_minus_state.shape)
+
+
+          D = tf.multiply(mask_tensor, blur_minus_state)
+          # print(D.shape)
+
+
           # Gradient calculation
           x = tf.cast(self.state_ph, tf.float32)
+          J_action = tf.Variable(tf.zeros(shape=[1, 1, 84, 84, 4], dtype=tf.float32))
           for idx_action in range(6):
             with tf.GradientTape() as g:
               g.watch(x)
               y = self.online_convnet(x)[0][0][idx_action]
             my_grad_action = g.gradient(y, x)
-            eval_grad = self._sess.run(my_grad_action, feed_dict={self.state_ph: self.state})
-            gradients_approx = eval_grad[0, :, :, 3]*4
+            J_action[0, :, :, :, :].assign(self._sess.run(my_grad_action, feed_dict={self.state_ph: self.state}))
+            # print('type(D)', type(D))
+            # print('type(J_action)', type(J_action))
+            dQ = self._sess.run(tf.tensordot(D, J_action, axes=[[2, 3, 4], [2, 3, 4]]))
+            # dQ = tf.tensordot(D, J_action, axes=[[2, 3, 4], [2, 3, 4]])
 
-            for i in range(84):
-              for j in range(84):
-                M = mask[126-i:210-i, 126-j:210-j]
-                dij_last_frame = np.multiply(M, blur_minus_state)
-                delta = np.sum(np.multiply(gradients_approx, dij_last_frame))
-                saliency[i, j] = saliency[i, j] + np.square(delta)
+
+            print(type(dQ))
+            print(dQ.numpy())
+
+            sys.exit()
+            plt.imshow(saliency_action, cmap='gray', vmin=0, vmax= np.amax(saliency_action))
+            plt.show()
+            sys.exit()
+
 
           saliency = np.sqrt(saliency)
           plt.imshow(saliency, cmap='gray', vmin=0, vmax= np.amax(saliency))

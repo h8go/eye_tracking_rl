@@ -46,6 +46,7 @@ from dopamine.utils import line_plotter
 import gin
 import numpy as np
 import tensorflow as tf
+
 import tf_slim
 import pdb
 import matplotlib.pyplot as plt
@@ -218,6 +219,17 @@ class MyRunner(run_experiment.Runner):
           for y in range(252):
             M[x][y] = np.exp(-( ( (x-126)**2 + (y-126)**2 ) / ( 2.0 * sigma_mask**2 ) ) )
 
+
+        mask_tensor = tf.Variable(tf.zeros(shape=[84, 84, 84, 84, 1], dtype=tf.float32))
+        print('shape', mask_tensor.shape)
+        if False:
+            for i in range(84):
+              print("creation mask_tensor : ", i, end='\r')
+              for j in range(84):
+                mask_tensor[i, j, :, :, 0].assign(M[126-i:210-i, 126-j:210-j])
+            print()
+
+
         # Keep interacting until we reach a terminal state.
         while True:
 
@@ -241,7 +253,7 @@ class MyRunner(run_experiment.Runner):
             self._end_episode(reward, is_terminal)
             action = self._agent.begin_episode(observation)
           else:
-            action = self._agent.step(reward, observation, step_number, M)
+            action = self._agent.step(reward, observation, step_number, mask_tensor)
 
         self._end_episode(reward, is_terminal)
 
@@ -297,7 +309,9 @@ def run(agent, game, num_steps, root_dir, restore_ckpt,
     use_legacy_checkpoint: bool, whether to restore from a legacy (pre-Keras)
       checkpoint.
   """
+
     tf.compat.v1.reset_default_graph()
+
     config = """
   atari_lib.create_atari_environment.game_name = '{}'
   WrappedReplayBuffer.replay_capacity = 300
