@@ -77,10 +77,10 @@ def main(_):
     #                   use_legacy_checkpoint=True)
 
   load_and_play_trained_agents.run(agent='dqn',
-                      game='Enduro',
+                      game='Freeway',
                       num_steps=1,
                       root_dir='/home/hugo',
-                      restore_ckpt='/content/gdrive/My Drive/RL/trained_agent/checkpoint/dqn/Enduro/1/tf_ckpt-199',
+                      restore_ckpt='/content/gdrive/My Drive/RL/trained_agent/checkpoint/dqn/Freeway/1/tf_ckpt-199',
                       use_legacy_checkpoint=True)
 
   # load_and_play_trained_agents.run(agent=FLAGS.agent,

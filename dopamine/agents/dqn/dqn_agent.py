@@ -438,7 +438,7 @@ class DQNAgent(object):
       # Saliency map using gradient method
       if True:
         if step_number > 100 and step_number < 200:
-
+        print("num actions : ", self.num_actions)
 
           state_ph, A_ph, M_ph, J_action_ph = placeholders[0], placeholders[1], placeholders[2], placeholders[3]
 
