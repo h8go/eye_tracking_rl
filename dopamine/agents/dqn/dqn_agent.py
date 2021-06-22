@@ -436,36 +436,12 @@ class DQNAgent(object):
 
 
       # Saliency map using gradient method
-      if False:
-        if step_number > 800 and step_number < 900:
-
-          x = tf.cast(self.state_ph, tf.float32)
-
-          saliency = np.zeros((84, 84))
-          for idx_action in range(6):
-            with tf.GradientTape() as g:
-              g.watch(x)
-              y = self.online_convnet(x)[0][0][idx_action]
-            my_grad_action = g.gradient(y, x)
-            eval_grad = self._sess.run(my_grad_action, feed_dict={self.state_ph: self.state})
-            gradients_last_frame = eval_grad[0, :, :, 3]
-            # plt.imshow(gradients_last_frame, cmap='gray', vmin=0, vmax=np.max(gradients_last_frame))
-            # plt.show()
-            # grad_action.append(gradients_last_frame)
-            saliency = saliency + np.square(gradients_last_frame)
-
-          plt.imshow(saliency, cmap='gray', vmin=0, vmax=np.max(saliency))
-          plt.savefig("/home/hugo/saliency_maps/DQN-pong/saliency_gradient2/saliency/gradient_saliency"+str(step_number)+".png")
-
-
       if True:
         if step_number > 100 and step_number < 200:
 
 
           state_ph, A_ph, M_ph, J_action_ph = placeholders[0], placeholders[1], placeholders[2], placeholders[3]
-          blur_minus_state, D, J_action_ph_extended, dQ = operations[0], operations[1],operations[2], operations[3]
 
-          # sess, my_grad_action1, my_grad_action2, my_grad_action3, my_grad_action4, my_grad_action5, my_grad_action6 = pack[0], pack[1], pack[2], pack[3], pack[4], pack[5], pack[6]
           sess, my_grad_action1, my_grad_action2, my_grad_action3, my_grad_action4 = pack[0], pack[1], pack[2], pack[3], pack[4]
 
           sigma_blur = 3
@@ -474,39 +450,33 @@ class DQNAgent(object):
             A_array[0, :, :, i] = cv2.GaussianBlur(self.state[0, :, :, i], (5, 5), sigma_blur)
 
           # Gradient calculation
-          saliency_approx_perturbation = np.zeros((84,84))
           saliency_gradient = np.zeros((84,84))
-
+          saliency_approx_perturbation = np.zeros((84,84))
 
           J_action_array1 = self._sess.run(my_grad_action1, feed_dict={state_ph: self.state})
           J_action_array2 = self._sess.run(my_grad_action2, feed_dict={state_ph: self.state})
           J_action_array3 = self._sess.run(my_grad_action3, feed_dict={state_ph: self.state})
           J_action_array4 = self._sess.run(my_grad_action4, feed_dict={state_ph: self.state})
-          # J_action_array5 = self._sess.run(my_grad_action5, feed_dict={state_ph: self.state})
-          # J_action_array6 = self._sess.run(my_grad_action6, feed_dict={state_ph: self.state})
+
 
           for i in range(4):
-            # saliency_gradient = saliency_gradient + np.abs(J_action_array1[0, :, :, i]) + np.abs(J_action_array2[0, :, :, i]) + np.abs(J_action_array3[0, :, :, i]) + np.abs(J_action_array4[0, :, :, i]) + np.abs(J_action_array5[0, :, :, i]) + np.abs(J_action_array6[0, :, :, i])
             saliency_gradient = saliency_gradient + np.abs(J_action_array1[0, :, :, i]) + np.abs(J_action_array2[0, :, :, i]) + np.abs(J_action_array3[0, :, :, i]) + np.abs(J_action_array4[0, :, :, i])
-            # saliency_gradient = saliency_gradient + np.abs(J_action_array1[0, :, :, i]) + np.abs(J_action_array2[0, :, :, i]) + np.abs(J_action_array3[0, :, :, i])
 
+          dQ = operations[3]
+          dQ_run1 = sess.run(dQ, feed_dict={A_ph: A_array, M_ph: M_array, J_action_ph: J_action_array1, state_ph: self.state})
+          dQ_run2 = sess.run(dQ, feed_dict={A_ph: A_array, M_ph: M_array, J_action_ph: J_action_array2, state_ph: self.state})
+          dQ_run3 = sess.run(dQ, feed_dict={A_ph: A_array, M_ph: M_array, J_action_ph: J_action_array3, state_ph: self.state})
+          dQ_run4 = sess.run(dQ, feed_dict={A_ph: A_array, M_ph: M_array, J_action_ph: J_action_array4, state_ph: self.state})
 
-          # dQ_run1 = sess.run(dQ, feed_dict={A_ph: A_array, M_ph: M_array, J_action_ph: J_action_array1, state_ph: self.state})
-          # dQ_run2 = sess.run(dQ, feed_dict={A_ph: A_array, M_ph: M_array, J_action_ph: J_action_array2, state_ph: self.state})
-          # dQ_run3 = sess.run(dQ, feed_dict={A_ph: A_array, M_ph: M_array, J_action_ph: J_action_array3, state_ph: self.state})
-          # dQ_run4 = sess.run(dQ, feed_dict={A_ph: A_array, M_ph: M_array, J_action_ph: J_action_array4, state_ph: self.state})
-          # dQ_run5 = sess.run(dQ, feed_dict={A_ph: A_array, M_ph: M_array, J_action_ph: J_action_array5, state_ph: self.state})
-          # dQ_run6 = sess.run(dQ, feed_dict={A_ph: A_array, M_ph: M_array, J_action_ph: J_action_array6, state_ph: self.state})
-          # saliency = saliency + dQ_run1[:, :, 0, 0] + dQ_run2[:, :, 0, 0] + dQ_run3[:, :, 0, 0] + dQ_run4[:, :, 0, 0] + dQ_run5[:, :, 0, 0] + dQ_run6[:, :, 0, 0]
-
-          plt.imshow(saliency_gradient, cmap='gray', vmin=0, vmax= np.amax(saliency_gradient))
-          # plt.plot()
-
-          if False:
-            plt.savefig("/content/gdrive/MyDrive/RL/saliency_maps/saliency/gradient_projection_saliency"+str(step_number)+".png")
+          saliency_approx_perturbation = saliency_approx_perturbation + dQ_run1[:, :, 0, 0] + dQ_run2[:, :, 0, 0] + dQ_run3[:, :, 0, 0] + dQ_run4[:, :, 0, 0]
 
           if True:
-            plt.savefig("/content/gdrive/MyDrive/RL/saliency_maps/saliency/gradient"+str(step_number)+".png")
+            plt.imshow(saliency_gradient, cmap='gray', vmin=0, vmax= np.amax(saliency_gradient))
+            plt.savefig("/content/gdrive/MyDrive/RL/saliency_maps/saliency/gradient/gradient"+str(step_number)+".png")
+
+          if True:
+            plt.imshow(saliency_approx_perturbation, cmap='gray', vmin=0, vmax= np.amax(saliency_approx_perturbation))
+            plt.savefig("/content/gdrive/MyDrive/RL/saliency_maps/saliency/saliency_approx_perturbation/saliency_approx_perturbation"+str(step_number)+".png")
 
 
 
