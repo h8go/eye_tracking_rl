@@ -457,8 +457,7 @@ class DQNAgent(object):
           plt.imshow(saliency, cmap='gray', vmin=0, vmax=np.max(saliency))
           plt.savefig("/home/hugo/saliency_maps/DQN-pong/saliency_gradient2/saliency/gradient_saliency"+str(step_number)+".png")
 
-      print("num action", self.num_actions)
-      sys.exit()
+
       if True:
         if step_number > 100 and step_number < 200:
 
