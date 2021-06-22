@@ -62,13 +62,12 @@ class MyDQNAgent(dqn_agent.DQNAgent):
         self.q_values = [[] for _ in range(num_actions)]
         self.rewards = []
 
-    def step(self, reward, observation, step_number, M):
+    def step(self, reward, observation, step_number, M, placeholders, operations, sess):
         self.rewards.append(reward)
-        return super(MyDQNAgent, self).step(reward, observation, step_number, M)
+        return super(MyDQNAgent, self).step(reward, observation, step_number, M, placeholders, operations, sess)
 
-    def _select_action(self, step_number, mask):
-        action = super(MyDQNAgent, self)._select_action(step_number, mask)
-        # print("on selectionne ici")
+    def _select_action(self, step_number, mask, placeholders, operations, sess):
+        action = super(MyDQNAgent, self)._select_action(step_number, mask, placeholders, operations, sess)
         q_vals = self._sess.run(self._net_outputs.q_values,
                                 {self.state_ph: self.state})[0]
         for i in range(len(q_vals)):
@@ -219,22 +218,77 @@ class MyRunner(run_experiment.Runner):
           for y in range(252):
             M[x][y] = np.exp(-( ( (x-126)**2 + (y-126)**2 ) / ( 2.0 * sigma_mask**2 ) ) )
 
-
-        # mask_tensor = tf.Variable(tf.zeros(shape=[84, 84, 84, 84, 1], dtype=tf.float32))
-        mask_tensor = tf.compat.v1.placeholder(tf.Variable(tf.zeros(shape=[84, 84, 84, 84, 1], dtype=tf.float32)))
-        print('shape', mask_tensor.shape)
+        M_array = np.zeros((84, 84, 84, 84, 1))
         if True:
             for i in range(84):
               print("creation mask_tensor : ", i, end='\r')
               for j in range(84):
-                mask_tensor[i, j, :, :, 0].assign(M[126-i:210-i, 126-j:210-j])
+                M_array[i, j, :, :, 0] = M[126-i:210-i, 126-j:210-j]
             print()
-        pdb.set_trace()
 
+        # Tensorflow placeholders
+        print('Placeholder declaration')
+        state_ph = tf.compat.v1.placeholder(shape=[1, 84, 84, 4], dtype=tf.float32)
+        A_ph = tf.compat.v1.placeholder(shape=[1, 84, 84, 4], dtype=tf.float32)
+        M_ph = tf.compat.v1.placeholder(shape=[84, 84, 84, 84, 1], dtype=tf.float32)
+        J_action_ph = tf.compat.v1.placeholder(shape=[1, 84, 84, 4], dtype=tf.float32)
+        placeholders = [state_ph, A_ph, M_ph, J_action_ph]
+
+        # Tensorflow operations
+        print('Operation declaration')
+        blur_minus_state = tf.add(A_ph, -tf.cast(state_ph, tf.float32)) # shape=[1, 84, 84, 4]
+        # print('blur_minus_state.shape', blur_minus_state.shape)
+        D = tf.multiply(M_ph, tf.expand_dims(blur_minus_state, axis=0)) # shape=[84, 84, 84, 84, 4]
+        # print('D.shape', D.shape)
+        J_action_ph_extended = tf.expand_dims(J_action_ph, axis=0)
+        # print('J_action_ph_extended.shape', J_action_ph_extended.shape)
+        dQ = tf.tensordot(D, J_action_ph_extended, axes=[[2, 3, 4], [2, 3, 4]])
+            # dQ.shape = [84, 84, 1]
+        operations = [blur_minus_state, D, J_action_ph_extended, dQ]
+
+        # Tensorflow session
+        print('tensorflow session')
+        sess = tf.compat.v1.Session()
+        sess.run(tf.compat.v1.global_variables_initializer())
+        print('tensorflow session ended')
+
+        # Jacobian construction
+        x = state_ph
+
+        with tf.GradientTape() as g:
+          g.watch(x)
+          y = self._agent.online_convnet(x)[0][0][0]
+        my_grad_action1 = g.gradient(y, x)
+
+        with tf.GradientTape() as g:
+          g.watch(x)
+          y = self._agent.online_convnet(x)[0][0][1]
+        my_grad_action2 = g.gradient(y, x)
+
+        with tf.GradientTape() as g:
+          g.watch(x)
+          y = self._agent.online_convnet(x)[0][0][2]
+        my_grad_action3 = g.gradient(y, x)
+
+        with tf.GradientTape() as g:
+          g.watch(x)
+          y = self._agent.online_convnet(x)[0][0][3]
+        my_grad_action4 = g.gradient(y, x)
+
+        # with tf.GradientTape() as g:
+        #   g.watch(x)
+        #   y = self._agent.online_convnet(x)[0][0][4]
+        # my_grad_action5 = g.gradient(y, x)
+        #
+        # with tf.GradientTape() as g:
+        #   g.watch(x)
+        #   y = self._agent.online_convnet(x)[0][0][5]
+        # my_grad_action6 = g.gradient(y, x)
+
+        self._agent._sess.graph.finalize()
 
         # Keep interacting until we reach a terminal state.
         while True:
-
           observation, reward, is_terminal = self._run_one_step(action, step_number)
 
           total_reward += reward
@@ -255,7 +309,9 @@ class MyRunner(run_experiment.Runner):
             self._end_episode(reward, is_terminal)
             action = self._agent.begin_episode(observation)
           else:
-            action = self._agent.step(reward, observation, step_number, mask_tensor)
+
+            pack = [sess, my_grad_action1, my_grad_action2, my_grad_action3, my_grad_action4] #, my_grad_action5, my_grad_action6]
+            action = self._agent.step(reward, observation, step_number, M_array, placeholders, operations, pack)
 
         self._end_episode(reward, is_terminal)
 
@@ -275,7 +331,7 @@ class MyRunner(run_experiment.Runner):
                 # self._environment.render('human')
                 image = self._environment.render('rgb_array')
                 plt.imshow(image)
-                plt.savefig("/home/hugo/saliency_maps/DQN-pong/saliency_maps_gradient_projection/render/render"+str(step_number)+".png")
+                plt.savefig("/content/gdrive/MyDrive/RL/saliency_maps/render/render"+str(step_number)+".png")
         return observation, reward, is_terminal
 
 def create_dqn_agent(sess, environment, summary_writer=None):

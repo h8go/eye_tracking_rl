@@ -21,6 +21,7 @@ from __future__ import print_function
 import math
 import os
 import random
+import time
 
 from absl import logging
 
@@ -30,7 +31,7 @@ import numpy as np
 import tensorflow as tf
 tf.compat.v1.enable_eager_execution()
 import matplotlib.pyplot as plt
-from dopamine.agents.dqn import perturbation
+# from dopamine.agents.dqn import perturbation
 import pdb
 import cv2
 import time
@@ -354,11 +355,13 @@ class DQNAgent(object):
     if not self.eval_mode:
       self._train_step()
     step_number = 0
-    mask = np.zeros((252, 252))
-    self.action = self._select_action(step_number, mask)
+    mask = None
+    placeholders, operations, sess = None, None, None
+    self.action = self._select_action(step_number, mask, placeholders, operations, sess)
     return self.action
 
-  def step(self, reward, observation, step_number, M):
+  def step(self, reward, observation, step_number, M, placeholders, operations, sess):
+
     """Records the most recent transition and returns the agent's next action.
 
     We store the observation of the last time step since we want to store it
@@ -380,7 +383,7 @@ class DQNAgent(object):
 
 
 
-    self.action = self._select_action(step_number, M)
+    self.action = self._select_action(step_number, M, placeholders, operations, sess)
     return self.action
 
   def end_episode(self, reward):
@@ -406,7 +409,7 @@ class DQNAgent(object):
       if not self.eval_mode:
         self._store_transition(self._observation, self.action, reward, True)
 
-  def _select_action(self, step_number, mask_tensor):
+  def _select_action(self, step_number, M_array, placeholders, operations, pack):
     # EPSILON
     if self.eval_mode:
       epsilon = self.epsilon_eval
@@ -454,68 +457,65 @@ class DQNAgent(object):
           plt.imshow(saliency, cmap='gray', vmin=0, vmax=np.max(saliency))
           plt.savefig("/home/hugo/saliency_maps/DQN-pong/saliency_gradient2/saliency/gradient_saliency"+str(step_number)+".png")
 
-
+      print("num action", self.num_actions)
+      sys.exit()
       if True:
-        if step_number > 10 and step_number < 200:
+        if step_number > 100 and step_number < 200:
 
-          # Saliency maps using gradient and projection method
+
+          state_ph, A_ph, M_ph, J_action_ph = placeholders[0], placeholders[1], placeholders[2], placeholders[3]
+          blur_minus_state, D, J_action_ph_extended, dQ = operations[0], operations[1],operations[2], operations[3]
+
+          # sess, my_grad_action1, my_grad_action2, my_grad_action3, my_grad_action4, my_grad_action5, my_grad_action6 = pack[0], pack[1], pack[2], pack[3], pack[4], pack[5], pack[6]
+          sess, my_grad_action1, my_grad_action2, my_grad_action3, my_grad_action4 = pack[0], pack[1], pack[2], pack[3], pack[4]
+
           sigma_blur = 3
-          # on peut faire ça en convolution sans utiliser cv2
-          A = tf.Variable(tf.zeros(shape=[1, 1, 84, 84, 4], dtype=tf.float32))
+          A_array = np.zeros((1, 84, 84, 4))
           for i in range(4):
-            A[0, 0, :, :, i].assign(cv2.GaussianBlur(self.state[0,:,:,i],(5,5), sigma_blur))
-
-          # print('A.shape', A.shape)
-          # print('self.state.shape', self.state.shape)
-          blur_minus_state = tf.Variable(tf.zeros(shape=[1, 1, 84, 84, 4], dtype=tf.float32))
-          blur_minus_state[0, :, :, :, :].assign(tf.add(A, -self.state))
-
-          print(blur_minus_state)
-          sys.exit()
-          # print(blur_minus_state.shape) # (1, 84, 84, 4)
-
-          print('mask_tensor.shape', mask_tensor.shape)
-          print('blur_minus_state.shape', blur_minus_state.shape)
-
-
-          D = tf.multiply(mask_tensor, blur_minus_state)
-          # print(D.shape)
-
+            A_array[0, :, :, i] = cv2.GaussianBlur(self.state[0, :, :, i], (5, 5), sigma_blur)
 
           # Gradient calculation
-          x = tf.cast(self.state_ph, tf.float32)
-          J_action = tf.Variable(tf.zeros(shape=[1, 1, 84, 84, 4], dtype=tf.float32))
-          for idx_action in range(6):
-            with tf.GradientTape() as g:
-              g.watch(x)
-              y = self.online_convnet(x)[0][0][idx_action]
-            my_grad_action = g.gradient(y, x)
-            J_action[0, :, :, :, :].assign(self._sess.run(my_grad_action, feed_dict={self.state_ph: self.state}))
-            # print('type(D)', type(D))
-            # print('type(J_action)', type(J_action))
-            dQ = self._sess.run(tf.tensordot(D, J_action, axes=[[2, 3, 4], [2, 3, 4]]))
-            # dQ = tf.tensordot(D, J_action, axes=[[2, 3, 4], [2, 3, 4]])
+          saliency_approx_perturbation = np.zeros((84,84))
+          saliency_gradient = np.zeros((84,84))
 
 
-            print(type(dQ))
-            print(dQ.numpy())
+          J_action_array1 = self._sess.run(my_grad_action1, feed_dict={state_ph: self.state})
+          J_action_array2 = self._sess.run(my_grad_action2, feed_dict={state_ph: self.state})
+          J_action_array3 = self._sess.run(my_grad_action3, feed_dict={state_ph: self.state})
+          J_action_array4 = self._sess.run(my_grad_action4, feed_dict={state_ph: self.state})
+          # J_action_array5 = self._sess.run(my_grad_action5, feed_dict={state_ph: self.state})
+          # J_action_array6 = self._sess.run(my_grad_action6, feed_dict={state_ph: self.state})
 
-            sys.exit()
-            plt.imshow(saliency_action, cmap='gray', vmin=0, vmax= np.amax(saliency_action))
-            plt.show()
-            sys.exit()
+          for i in range(4):
+            # saliency_gradient = saliency_gradient + np.abs(J_action_array1[0, :, :, i]) + np.abs(J_action_array2[0, :, :, i]) + np.abs(J_action_array3[0, :, :, i]) + np.abs(J_action_array4[0, :, :, i]) + np.abs(J_action_array5[0, :, :, i]) + np.abs(J_action_array6[0, :, :, i])
+            saliency_gradient = saliency_gradient + np.abs(J_action_array1[0, :, :, i]) + np.abs(J_action_array2[0, :, :, i]) + np.abs(J_action_array3[0, :, :, i]) + np.abs(J_action_array4[0, :, :, i])
+            # saliency_gradient = saliency_gradient + np.abs(J_action_array1[0, :, :, i]) + np.abs(J_action_array2[0, :, :, i]) + np.abs(J_action_array3[0, :, :, i])
 
 
-          saliency = np.sqrt(saliency)
-          plt.imshow(saliency, cmap='gray', vmin=0, vmax= np.amax(saliency))
-          plt.savefig("/home/hugo/saliency_maps/DQN-pong/saliency_maps_gradient_projection/gradient_and_projection/gradient_projection_saliency"+str(step_number)+".png")
-          print("saliency map par gradient and projection saved")
+          # dQ_run1 = sess.run(dQ, feed_dict={A_ph: A_array, M_ph: M_array, J_action_ph: J_action_array1, state_ph: self.state})
+          # dQ_run2 = sess.run(dQ, feed_dict={A_ph: A_array, M_ph: M_array, J_action_ph: J_action_array2, state_ph: self.state})
+          # dQ_run3 = sess.run(dQ, feed_dict={A_ph: A_array, M_ph: M_array, J_action_ph: J_action_array3, state_ph: self.state})
+          # dQ_run4 = sess.run(dQ, feed_dict={A_ph: A_array, M_ph: M_array, J_action_ph: J_action_array4, state_ph: self.state})
+          # dQ_run5 = sess.run(dQ, feed_dict={A_ph: A_array, M_ph: M_array, J_action_ph: J_action_array5, state_ph: self.state})
+          # dQ_run6 = sess.run(dQ, feed_dict={A_ph: A_array, M_ph: M_array, J_action_ph: J_action_array6, state_ph: self.state})
+          # saliency = saliency + dQ_run1[:, :, 0, 0] + dQ_run2[:, :, 0, 0] + dQ_run3[:, :, 0, 0] + dQ_run4[:, :, 0, 0] + dQ_run5[:, :, 0, 0] + dQ_run6[:, :, 0, 0]
+
+          plt.imshow(saliency_gradient, cmap='gray', vmin=0, vmax= np.amax(saliency_gradient))
+          # plt.plot()
+
+          if False:
+            plt.savefig("/content/gdrive/MyDrive/RL/saliency_maps/saliency/gradient_projection_saliency"+str(step_number)+".png")
+
+          if True:
+            plt.savefig("/content/gdrive/MyDrive/RL/saliency_maps/saliency/gradient"+str(step_number)+".png")
+
+
 
       # Sauvegarde du state[3]
       if True:
         if step_number > 100 and step_number < 200:
           plt.imshow(self.state[0,:,:,3], cmap='gray', vmin=0, vmax=255)
-          plt.savefig("/home/hugo/saliency_maps/DQN-pong/saliency_maps_gradient_projection/state/state"+str(step_number)+".png")
+          plt.savefig("/content/gdrive/MyDrive/RL/saliency_maps/state/state"+str(step_number)+".png")
 
 
 
