@@ -471,9 +471,9 @@ class DQNAgent(object):
           dQ_run5 = sess.run(dQ, feed_dict={A_ph: A_array, M_ph: M_array, J_action_ph: J_action_array5, state_ph: self.state})
           dQ_run6 = sess.run(dQ, feed_dict={A_ph: A_array, M_ph: M_array, J_action_ph: J_action_array6, state_ph: self.state})
 
-          saliency_approx_perturbation = saliency_approx_perturbation + dQ_run1[:, :, 0, 0] + dQ_run2[:, :, 0, 0] + dQ_run3[:, :, 0, 0] + dQ_run4[:, :, 0, 0] + dQ_run5[:, :, 0, 0] + dQ_run6[:, :, 0, 0]
-
-          if True:
+          saliency_approx_perturbation = saliency_approx_perturbation + dQ_run1[:, :, 0, 0]**2 + dQ_run2[:, :, 0, 0]**2 + dQ_run3[:, :, 0, 0]**2 + dQ_run4[:, :, 0, 0]**2 + dQ_run5[:, :, 0, 0]**2+ dQ_run6[:, :, 0, 0]**2
+          saliency_approx_perturbation = np.sqrt(saliency_approx_perturbation)
+          if False:
             plt.imshow(saliency_gradient, cmap='gray', vmin=0, vmax= np.amax(saliency_gradient))
             plt.savefig("/content/gdrive/MyDrive/RL/saliency_maps/saliency/gradient/gradient"+str(step_number)+".png")
 
