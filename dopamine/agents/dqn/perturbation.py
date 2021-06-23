@@ -1,8 +1,7 @@
 import sys
 import numpy as np
 np.set_printoptions(threshold=sys.maxsize)
-import matplotlib
-matplotlib.use('TkAgg')
+
 import matplotlib.pyplot as plt
 import pickle
 import math

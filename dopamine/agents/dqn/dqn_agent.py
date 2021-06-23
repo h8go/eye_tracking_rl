@@ -443,12 +443,12 @@ class DQNAgent(object):
           # Saving the saliency
           if True:
             plt.imshow(saliency_map, cmap='gray', vmin=0, vmax=np.max(saliency_map))
-            plt.savefig("/home/hugo/saliency_maps/Rainbow-Tennis/saliency/high_resolution/perturbation_map"+str(step_number)+".png")
+            plt.savefig("/content/gdrive/My Drive/RL/saliency/high_resolution/perturbation_map"+str(step_number)+".png")
 
           # Saving the state
           if True:
             plt.imshow(self.state[0,:,:,3], cmap='gray', vmin=0, vmax=255)
-            plt.savefig("/home/hugo/saliency_maps/Rainbow-Tennis/state/state"+str(step_number)+".png")
+            plt.savefig("/content/gdrive/My Drive/RL/state/state"+str(step_number)+".png")
 
 
       # QUARTER RESOLUTION SALIENCY MAP
@@ -469,7 +469,7 @@ class DQNAgent(object):
         # Saving the saliency
         if True:
           plt.imshow(saliency_map, cmap='gray', vmin=0, vmax=np.max(saliency_map))
-          plt.savefig("/home/hugo/saliency_maps/Rainbow-Tennis/saliency/low_resolution/perturbation_map"+str(step_number)+".png")
+          plt.savefig("/content/gdrive/My Drive/RL/saliency/low_resolution/perturbation_map"+str(step_number)+".png")
 
         # Saving the state
         if False:
