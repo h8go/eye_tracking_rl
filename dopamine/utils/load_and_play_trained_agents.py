@@ -210,6 +210,7 @@ class MyRunner(run_experiment.Runner):
         action = self._initialize_episode()
         is_terminal = False
 
+
         # Keep interacting until we reach a terminal state.
         while True:
           observation, reward, is_terminal = self._run_one_step(action, step_number)
