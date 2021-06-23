@@ -80,7 +80,7 @@ def main(_):
                       game='Pong',
                       num_steps=1,
                       root_dir='/hugo/home',
-                      restore_ckpt='/content/gdrive/My Drive/RL/trained_agent/checkpoint/rainbow/Pong/lucid_rainbow_Pong_1_tf_ckpt-199s',
+                      restore_ckpt='/content/gdrive/My Drive/RL/trained_agent/checkpoint/rainbow/Pong/lucid_rainbow_Pong_1_tf_ckpt-199',
                       use_legacy_checkpoint=True)
 
   # load_and_play_trained_agents.run(agent=FLAGS.agent,
