@@ -270,10 +270,6 @@ class MyRunner(run_experiment.Runner):
           y = self._agent.online_convnet(x)[0][0][2]
         my_grad_action3 = g.gradient(y, x)
 
-        with tf.GradientTape() as g:
-          g.watch(x)
-          y = self._agent.online_convnet(x)[0][0][3]
-        my_grad_action4 = g.gradient(y, x)
 
 
         self._agent._sess.graph.finalize()
@@ -301,7 +297,7 @@ class MyRunner(run_experiment.Runner):
             action = self._agent.begin_episode(observation)
           else:
 
-            pack = [sess, my_grad_action1, my_grad_action2, my_grad_action3, my_grad_action4]
+            pack = [sess, my_grad_action1, my_grad_action2, my_grad_action3]
             action = self._agent.step(reward, observation, step_number, M_array, placeholders, operations, pack)
 
         self._end_episode(reward, is_terminal)
