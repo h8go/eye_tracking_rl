@@ -430,8 +430,8 @@ class DQNAgent(object):
 
 
       # FULL RESOLUTION SALIENCY MAP
-      if False:
-        if step_number > 900 and step_number < 1000:
+      if True:
+        if step_number == 100 or step_number == 500 or step_number == 900:
           print("calcul saliency map")
           saliency_map = np.zeros((84,84))
           for x in range(84):
@@ -443,7 +443,7 @@ class DQNAgent(object):
           # Saving the saliency
           if True:
             plt.imshow(saliency_map, cmap='gray', vmin=0, vmax=np.max(saliency_map))
-            plt.savefig("/home/hugo/saliency_maps/Rainbow-Tennis/saliency/perturbation_map"+str(step_number)+".png")
+            plt.savefig("/home/hugo/saliency_maps/Rainbow-Tennis/saliency/high_resolution/perturbation_map"+str(step_number)+".png")
 
           # Saving the state
           if True:
@@ -453,7 +453,7 @@ class DQNAgent(object):
 
       # QUARTER RESOLUTION SALIENCY MAP
       if True:
-        if step_number > 900 and step_number < 1000:
+        if step_number == 100 or step_number == 500 or step_number == 900:
 
           # pdb.set_trace()
           # time.sleep(5)
@@ -469,10 +469,10 @@ class DQNAgent(object):
         # Saving the saliency
         if True:
           plt.imshow(saliency_map, cmap='gray', vmin=0, vmax=np.max(saliency_map))
-          plt.savefig("/home/hugo/saliency_maps/Rainbow-Tennis/saliency/perturbation_map"+str(step_number)+".png")
+          plt.savefig("/home/hugo/saliency_maps/Rainbow-Tennis/saliency/low_resolution/perturbation_map"+str(step_number)+".png")
 
         # Saving the state
-        if True:
+        if False:
           plt.imshow(self.state[0,:,:,3], cmap='gray', vmin=0, vmax=255)
           plt.savefig("/home/hugo/saliency_maps/Rainbow-Tennis/state/state"+str(step_number)+".png")
 
