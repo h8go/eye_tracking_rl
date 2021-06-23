@@ -246,7 +246,7 @@ class MyRunner(run_experiment.Runner):
                 # self._environment.render('human')
                 image = self._environment.render('rgb_array')
                 plt.imshow(image)
-                plt.savefig("/content/gdrive/My Drive/RL/saliency/render/render"+str(step_number)+".png")
+                plt.savefig("/content/gdrive/My Drive/RL/saliency_maps/render/render"+str(step_number)+".png")
         # image = self._environment.render('rgb_array')
         # plt.imshow(image)
         # plt.savefig("/home/hugo/render1.png")

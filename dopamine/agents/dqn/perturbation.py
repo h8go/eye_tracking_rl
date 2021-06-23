@@ -55,13 +55,12 @@ def phi_one_frame(frame, i, j):
 
     sigma_blur = 3
     A = cv2.GaussianBlur(frame,(5,5), sigma_blur)
-    # plt.imshow(A, cmap='gray', vmin=0, vmax=255)
-    # plt.show()
+
 
     return np.multiply(frame, np.ones((84,84)) - M) + np.multiply(A, M)
 
 def phi(state, i, j):
-    # print(state)
+
     state_prime = np.zeros(state.shape)
     for idx in range(4):
 
