@@ -430,23 +430,29 @@ class DQNAgent(object):
 
 
       # FULL RESOLUTION SALIENCY MAP
-      # if step_number>10:
-      #   print("calcul saliency map")
-      #   saliency_map = np.zeros((84,84))
-      #   for x in range(84):
-      #     print("x image", x)
-      #     for y in range(84):
-      #       pi_prime = self._sess.run(self._net_outputs.q_values, {self.state_ph: perturbation.phi(self.state, x, y)})
-      #       saliency_map[x][y] = math.sqrt(np.sum( (pi[0]-pi_prime[0])**2 ))
-      #
-      #   plt.imshow(saliency_map, cmap='gray', vmin=0, vmax=np.max(saliency_map))
-      #   plt.show()
+      if False:
+        if step_number > 900 and step_number < 1000:
+          print("calcul saliency map")
+          saliency_map = np.zeros((84,84))
+          for x in range(84):
+            print("x image", x)
+            for y in range(84):
+              pi_prime = self._sess.run(self._net_outputs.q_values, {self.state_ph: perturbation.phi(self.state, x, y)})
+              saliency_map[x][y] = math.sqrt(np.sum( (pi[0]-pi_prime[0])**2 ))
 
-      if step_number == 500:
-        pdb.set_trace()
+          # Saving the saliency
+          if True:
+            plt.imshow(saliency_map, cmap='gray', vmin=0, vmax=np.max(saliency_map))
+            plt.savefig("/home/hugo/saliency_maps/Rainbow-Tennis/saliency/perturbation_map"+str(step_number)+".png")
+
+          # Saving the state
+          if True:
+            plt.imshow(self.state[0,:,:,3], cmap='gray', vmin=0, vmax=255)
+            plt.savefig("/home/hugo/saliency_maps/Rainbow-Tennis/state/state"+str(step_number)+".png")
+
 
       # QUARTER RESOLUTION SALIENCY MAP
-      if False:
+      if True:
         if step_number > 900 and step_number < 1000:
 
           # pdb.set_trace()
@@ -459,35 +465,19 @@ class DQNAgent(object):
               if (x-1)%4==0 and (y-1)%4==0: #dqn
                 pi_prime = self._sess.run(self._net_outputs.q_values, {self.state_ph: perturbation.phi(self.state, x, y)})
                 saliency_map[int((x-1)/4)][int((y-1)/4)] = math.sqrt(np.sum( (pi[0]-pi_prime[0])**2 ))
-          # sys.exit()
-          # plt.imshow(self.state[0,:,:,0], cmap='gray', vmin=0, vmax=255)
-          # plt.show()
+
+        # Saving the saliency
+        if True:
           plt.imshow(saliency_map, cmap='gray', vmin=0, vmax=np.max(saliency_map))
-          # plt.show()
           plt.savefig("/home/hugo/saliency_maps/Rainbow-Tennis/saliency/perturbation_map"+str(step_number)+".png")
 
+        # Saving the state
+        if True:
           plt.imshow(self.state[0,:,:,3], cmap='gray', vmin=0, vmax=255)
           plt.savefig("/home/hugo/saliency_maps/Rainbow-Tennis/state/state"+str(step_number)+".png")
 
       return self._sess.run(self._q_argmax, {self.state_ph: self.state})
 
-
-  # def _select_action(self):
-  #   if self.eval_mode:
-  #     epsilon = self.epsilon_eval
-  #   else:
-  #     epsilon = self.epsilon_fn(
-  #         self.epsilon_decay_period,
-  #         self.training_steps,
-  #         self.min_replay_history,
-  #         self.epsilon_train)
-  #   if random.random() <= epsilon:
-  #     print("action aléatoire")
-  #     # Choose a random action with probability epsilon.
-  #     return random.randint(0, self.num_actions - 1)
-  #   else:
-  #     # Choose the action with highest Q-value at the current state.
-  #     return self._sess.run(self._q_argmax, {self.state_ph: self.state})
 
   def _train_step(self):
     """Runs a single training step.
