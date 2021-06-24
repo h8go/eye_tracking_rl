@@ -438,7 +438,7 @@ class DQNAgent(object):
             print("x image", x)
             for y in range(84):
               pi_prime = self._sess.run(self._net_outputs.q_values, {self.state_ph: perturbation.phi(self.state, x, y)})
-              saliency_map[x][y] = math.sqrt(np.sum( (pi[0]-pi_prime[0])**2 ))
+              saliency_map[x][y] = math.sqrt(np.sum( (pi-pi_prime)**2 ))
 
           # Saving the saliency
           if True:
