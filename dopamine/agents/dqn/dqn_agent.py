@@ -479,14 +479,11 @@ class DQNAgent(object):
 
 
 
-      # Sauvegarde du state[3]
+      # Saving the last frame of state
       if True:
         if step_number > 100 and step_number < 200:
           plt.imshow(self.state[0,:,:,3], cmap='gray', vmin=0, vmax=255)
           plt.savefig("/content/gdrive/MyDrive/RL/saliency_maps/state/state"+str(step_number)+".png")
-
-
-
 
       # QUARTER RESOLUTION SALIENCY MAP using perturbation method
       if False:
@@ -502,11 +499,8 @@ class DQNAgent(object):
               if (x-1)%4==0 and (y-1)%4==0:
                 # gradient saliency map
                 pass
-          # sys.exit()
-          # plt.imshow(self.state[0,:,:,0], cmap='gray', vmin=0, vmax=255)
-          # plt.show()
+
           plt.imshow(saliency_map, cmap='gray', vmin=0, vmax=np.max(saliency_map))
-          # plt.show()
           plt.savefig("/home/hugo/saliency_maps/Rainbow-pong5probabilities/saliency/perturbation_map"+str(step_number)+".png")
 
           plt.imshow(self.state[0,:,:,3], cmap='gray', vmin=0, vmax=255)

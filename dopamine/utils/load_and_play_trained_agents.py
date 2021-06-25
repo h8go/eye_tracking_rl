@@ -306,16 +306,10 @@ class MyRunner(run_experiment.Runner):
 
     def _run_one_step(self, action, step_number):
         observation, reward, is_terminal, _ = self._environment.step(action)
-        # print("une step effectuée")
-        # print('screen_buffer', len(self._environment.screen_buffer))
-        # self._environment.render('human')
-        # if step_number == 29:
-        #     image = self._environment.render('rgb_array')
-        #     plt.imshow(image)
-        #     plt.show()
+
+        # Saving the render
         if True:
             if step_number > 100 and step_number < 200:
-                # self._environment.render('human')
                 image = self._environment.render('rgb_array')
                 plt.imshow(image)
                 plt.savefig("/content/gdrive/MyDrive/RL/saliency_maps/render/render"+str(step_number)+".png")
