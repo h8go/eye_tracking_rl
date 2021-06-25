@@ -243,7 +243,7 @@ class MyRunner(run_experiment.Runner):
         # print("une step effectuée")
         # print('screen_buffer', len(self._environment.screen_buffer))
         # self._environment.render('human')
-        if False:
+        if True:
             if step_number > 900 and step_number < 1000:
                 # self._environment.render('human')
                 image = self._environment.render('rgb_array')
