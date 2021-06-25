@@ -455,7 +455,7 @@ class DQNAgent(object):
           plt.imshow(saliency, cmap='gray', vmin=0, vmax=np.max(saliency))
           plt.savefig("/home/hugo/saliency_maps/DQN-pong/saliency_gradient2/saliency/gradient_saliency"+str(step_number)+".png")
 
-
+      # Gradient and approximation saliency maps
       if True:
         if step_number > 800 and step_number < 900:
 
@@ -473,7 +473,7 @@ class DQNAgent(object):
 
 
 
-          # Saliency maps using gradient and projection method
+          # Saliency maps calculated via the approximation of the perturbation method
           saliency = np.zeros((84, 84))
           for i in range(84):
             print(int(i/84*100)," % de la saliency map par gradient et projection", end='\r')
@@ -517,7 +517,8 @@ class DQNAgent(object):
           plt.imshow(saliency_map, cmap='gray', vmin=0, vmax=np.max(saliency_map))
           plt.savefig("/home/hugo/saliency_maps/DQN-pong/saliency_maps_all2/perturbation/perturbation"+str(step_number)+".png")
           print("saliency map par perturbation")
-      # Sauvegarde du state[3]
+
+      # Saving of the last frame of state
       if True:
         if step_number > 800 and step_number < 900:
           plt.imshow(self.state[0,:,:,3], cmap='gray', vmin=0, vmax=255)
