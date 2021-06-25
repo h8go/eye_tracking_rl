@@ -497,7 +497,7 @@ class DQNAgent(object):
           saliency = np.zeros((84, 84))
           for idx_action in range(6):
             for idx_frame in range(4):
-              saliency = saliency + np.square(J[idx_action][0,:,:,idx_frame])
+              saliency = saliency + np.abs(J[idx_action][0,:,:,idx_frame])
           plt.imshow(saliency, cmap='gray', vmin=0, vmax=np.amax(saliency))
           plt.savefig("/home/hugo/saliency_maps/DQN-pong/saliency_maps_all2/gradient/gradient_saliency"+str(step_number)+".png")
           print("saliency map par gradient saved")
