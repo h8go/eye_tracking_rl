@@ -11,7 +11,6 @@ Then, the working of the algorithm is explained late.
 - rainbow_perturbation_saliency: Full and low resolution perturbation saliency for rainbow agent for any game
 - saliency_Enduro_dqn : Gradient and perturbation approximation saliency (optimized) and low resolution perturbation saliency for DQN and Enduro
 - saliency_Freeway_dqn : Gradient and perturbation approximation saliency (optimized) and low resolution perturbation saliency for DQN and Freeway
-- saliency_MsPacman_dqn : Gradient and perturbation approximation saliency (optimized) and low resolution perturbation saliency for DQN and MsPacman
 - saliency_Pong_dqn : Gradient and perturbation approximation saliency (optimized) and low resolution perturbation saliency for DQN and Pong
 
 Advices: - all_saliency_maps allows to understand how all saliency are computed in a simple way. It can be a good idea to start here
