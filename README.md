@@ -9,10 +9,10 @@ Then, the working of the algorithm is explained late.
 - master: Perturbation High and low resolution perturbation saliency with DQN for any game
 - all_saliency_maps: High resolution perturbation saliency, gradient saliency and perturbation approximation saliency (non optimized) with DQN for Pong
 - rainbow_perturbation_saliency: Full and low resolution perturbation saliency for rainbow agent for any game
-- saliency_Enduro_dqn : Gradient and perturbation approximation saliency (optimized) for DQN and Enduro
-- saliency_Freeway_dqn : Gradient and perturbation approximation saliency (optimized) for DQN and Freeway
-- saliency_MsPacman_dqn : Gradient and perturbation approximation saliency (optimized) for DQN and MsPacman
-- saliency_Pong_dqn : Gradient and perturbation approximation saliency (optimized) for DQN and Pong
+- saliency_Enduro_dqn : Gradient and perturbation approximation saliency (optimized) and low resolution perturbation saliency for DQN and Enduro
+- saliency_Freeway_dqn : Gradient and perturbation approximation saliency (optimized) and low resolution perturbation saliency for DQN and Freeway
+- saliency_MsPacman_dqn : Gradient and perturbation approximation saliency (optimized) and low resolution perturbation saliency for DQN and MsPacman
+- saliency_Pong_dqn : Gradient and perturbation approximation saliency (optimized) and low resolution perturbation saliency for DQN and Pong
 
 Advices: - all_saliency_maps allows to understand how all saliency are computed in a simple way. It can be a good idea to start here
          - the master and rainbow_perturbation_saliency compute perturbation saliency maps. They are useful if you want to compare the saliency of dqn and rainbow agents
