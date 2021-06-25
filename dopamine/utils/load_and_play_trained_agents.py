@@ -240,6 +240,7 @@ class MyRunner(run_experiment.Runner):
 
     def _run_one_step(self, action, step_number):
         observation, reward, is_terminal, _ = self._environment.step(action)
+        # Saving the render
         if True:
             if step_number > 900 and step_number < 1000:
                 image = self._environment.render('rgb_array')

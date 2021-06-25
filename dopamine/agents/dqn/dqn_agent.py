@@ -439,11 +439,15 @@ class DQNAgent(object):
               pi_prime = self._sess.run(self._net_outputs.q_values, {self.state_ph: perturbation.phi(self.state, x, y)})
               saliency_map[x][y] = math.sqrt(np.sum( (pi[0]-pi_prime[0])**2 ))
 
-          plt.imshow(saliency_map, cmap='gray', vmin=0, vmax=np.max(saliency_map))
-          plt.savefig("/home/hugo/saliency_maps/Rainbow-Tennis/saliency/perturbation_map"+str(step_number)+".png")
+          # Saving the saliency
+          if True:
+            plt.imshow(saliency_map, cmap='gray', vmin=0, vmax=np.max(saliency_map))
+            plt.savefig("/home/hugo/saliency_maps/Rainbow-Tennis/saliency/perturbation_map"+str(step_number)+".png")
 
-          plt.imshow(self.state[0,:,:,3], cmap='gray', vmin=0, vmax=255)
-          plt.savefig("/home/hugo/saliency_maps/Rainbow-Tennis/state/state"+str(step_number)+".png")
+          # Saving the last frame of the state
+          if True:
+            plt.imshow(self.state[0,:,:,3], cmap='gray', vmin=0, vmax=255)
+            plt.savefig("/home/hugo/saliency_maps/Rainbow-Tennis/state/state"+str(step_number)+".png")
 
 
       if True:
@@ -458,11 +462,15 @@ class DQNAgent(object):
                 pi_prime = self._sess.run(self._net_outputs.q_values, {self.state_ph: perturbation.phi(self.state, x, y)})
                 saliency_map[int((x-1)/4)][int((y-1)/4)] = math.sqrt(np.sum( (pi[0]-pi_prime[0])**2 ))
 
-          plt.imshow(saliency_map, cmap='gray', vmin=0, vmax=np.max(saliency_map))
-          plt.savefig("/home/hugo/saliency_maps/Rainbow-Tennis/saliency/perturbation_map"+str(step_number)+".png")
+          # Saving the saliency
+          if True:
+            plt.imshow(saliency_map, cmap='gray', vmin=0, vmax=np.max(saliency_map))
+            plt.savefig("/home/hugo/saliency_maps/Rainbow-Tennis/saliency/perturbation_map"+str(step_number)+".png")
 
-          plt.imshow(self.state[0,:,:,3], cmap='gray', vmin=0, vmax=255)
-          plt.savefig("/home/hugo/saliency_maps/Rainbow-Tennis/state/state"+str(step_number)+".png")
+          # Saving the last frame of the state
+          if True:
+            plt.imshow(self.state[0,:,:,3], cmap='gray', vmin=0, vmax=255)
+            plt.savefig("/home/hugo/saliency_maps/Rainbow-Tennis/state/state"+str(step_number)+".png")
 
       return self._sess.run(self._q_argmax, {self.state_ph: self.state})
 
