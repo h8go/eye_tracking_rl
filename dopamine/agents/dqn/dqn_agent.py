@@ -441,7 +441,6 @@ class DQNAgent(object):
 
 
           state_ph, A_ph, M_ph, J_action_ph = placeholders[0], placeholders[1], placeholders[2], placeholders[3]
-
           sess, my_grad_action1, my_grad_action2, my_grad_action3, my_grad_action4 = pack[0], pack[1], pack[2], pack[3], pack[4]
 
           sigma_blur = 3
@@ -478,9 +477,7 @@ class DQNAgent(object):
             plt.imshow(saliency_approx_perturbation, cmap='gray', vmin=0, vmax= np.amax(saliency_approx_perturbation))
             plt.savefig("/content/gdrive/MyDrive/RL/saliency_maps/saliency/saliency_approx_perturbation/saliency_approx_perturbation"+str(step_number)+".png")
 
-
-
-      # Sauvegarde du state[3]
+      # Saving the last frame of state
       if True:
         if step_number > 100 and step_number < 200:
           plt.imshow(self.state[0,:,:,3], cmap='gray', vmin=0, vmax=255)
@@ -503,11 +500,8 @@ class DQNAgent(object):
               if (x-1)%4==0 and (y-1)%4==0:
                 # gradient saliency map
                 pass
-          # sys.exit()
-          # plt.imshow(self.state[0,:,:,0], cmap='gray', vmin=0, vmax=255)
-          # plt.show()
+
           plt.imshow(saliency_map, cmap='gray', vmin=0, vmax=np.max(saliency_map))
-          # plt.show()
           plt.savefig("/home/hugo/saliency_maps/Rainbow-pong5probabilities/saliency/perturbation_map"+str(step_number)+".png")
 
           plt.imshow(self.state[0,:,:,3], cmap='gray', vmin=0, vmax=255)

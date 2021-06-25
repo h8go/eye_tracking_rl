@@ -237,20 +237,14 @@ class MyRunner(run_experiment.Runner):
         # Tensorflow operations
         print('Operation declaration')
         blur_minus_state = tf.add(A_ph, -tf.cast(state_ph, tf.float32)) # shape=[1, 84, 84, 4]
-        # print('blur_minus_state.shape', blur_minus_state.shape)
         D = tf.multiply(M_ph, tf.expand_dims(blur_minus_state, axis=0)) # shape=[84, 84, 84, 84, 4]
-        # print('D.shape', D.shape)
         J_action_ph_extended = tf.expand_dims(J_action_ph, axis=0)
-        # print('J_action_ph_extended.shape', J_action_ph_extended.shape)
-        dQ = tf.tensordot(D, J_action_ph_extended, axes=[[2, 3, 4], [2, 3, 4]])
-            # dQ.shape = [84, 84, 1]
+        dQ = tf.tensordot(D, J_action_ph_extended, axes=[[2, 3, 4], [2, 3, 4]]) # dQ.shape = [84, 84, 1]
         operations = [blur_minus_state, D, J_action_ph_extended, dQ]
 
         # Tensorflow session
-        print('tensorflow session')
         sess = tf.compat.v1.Session()
         sess.run(tf.compat.v1.global_variables_initializer())
-        print('tensorflow session ended')
 
         # Jacobian construction
         x = state_ph
