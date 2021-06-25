@@ -5,6 +5,7 @@ There are several branches in this project in which different calculations are m
 First, the contents of the branches are described
 Then, the working of the algorithm is explained late.
 
-Here is the the description :
-- master : Perturbation saliency for DQN for any game
-- 
+Here is the description of the branches:
+- master : Perturbation saliency for DQN for any game with high and low resolution
+- all_saliency_maps : Full resolution perturbation saliency, gradient saliency and approximation saliency (non optimized)
+- dqn_pert
