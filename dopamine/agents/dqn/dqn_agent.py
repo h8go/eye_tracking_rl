@@ -31,7 +31,6 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 from dopamine.agents.dqn import perturbation
 import pdb
-import cv2
 import time
 import sys
 
@@ -353,11 +352,10 @@ class DQNAgent(object):
     if not self.eval_mode:
       self._train_step()
     step_number = 0
-    mask = np.zeros((252, 252))
-    self.action = self._select_action(step_number, mask)
+    self.action = self._select_action(step_number)
     return self.action
 
-  def step(self, reward, observation, step_number, M):
+  def step(self, reward, observation, step_number):
     """Records the most recent transition and returns the agent's next action.
 
     We store the observation of the last time step since we want to store it
@@ -377,9 +375,7 @@ class DQNAgent(object):
       self._store_transition(self._last_observation, self.action, reward, False)
       self._train_step()
 
-
-
-    self.action = self._select_action(step_number, M)
+    self.action = self._select_action(step_number)
     return self.action
 
   def end_episode(self, reward):
@@ -405,9 +401,7 @@ class DQNAgent(object):
       if not self.eval_mode:
         self._store_transition(self._observation, self.action, reward, True)
 
-  def _select_action(self, step_number, mask):
-
-
+  def _select_action(self, step_number):
     # EPSILON
     if self.eval_mode:
       epsilon = self.epsilon_eval
@@ -432,143 +426,44 @@ class DQNAgent(object):
       # Choose the action with highest Q-value at the current state.
       # print("action selected with highest Q-value")
 
-
-      # Saliency map using gradient method
-      if False:
-        if step_number > 800 and step_number < 900:
-
-          x = tf.cast(self.state_ph, tf.float32)
-
-          saliency = np.zeros((84, 84))
-          for idx_action in range(6):
-            with tf.GradientTape() as g:
-              g.watch(x)
-              y = self.online_convnet(x)[0][0][idx_action]
-            my_grad_action = g.gradient(y, x)
-            eval_grad = self._sess.run(my_grad_action, feed_dict={self.state_ph: self.state})
-            gradients_last_frame = eval_grad[0, :, :, 3]
-            # plt.imshow(gradients_last_frame, cmap='gray', vmin=0, vmax=np.max(gradients_last_frame))
-            # plt.show()
-            # grad_action.append(gradients_last_frame)
-            saliency = saliency + np.square(gradients_last_frame)
-
-          plt.imshow(saliency, cmap='gray', vmin=0, vmax=np.max(saliency))
-          plt.savefig("/home/hugo/saliency_maps/DQN-pong/saliency_gradient2/saliency/gradient_saliency"+str(step_number)+".png")
-
+      pi = self._sess.run(self._net_outputs.q_values, {self.state_ph: self.state})
 
       if True:
-        if step_number > 800 and step_number < 900:
-
-          x = tf.cast(self.state_ph, tf.float32)
-
-          # Gradient calculation
-          J = []
-          for idx_action in range(6):
-            with tf.GradientTape() as g:
-              g.watch(x)
-              y = self.online_convnet(x)[0][0][idx_action]
-            my_grad_action = g.gradient(y, x)
-            eval_grad = self._sess.run(my_grad_action, feed_dict={self.state_ph: self.state})
-            J.append(eval_grad)
-
-
-
-          # Saliency maps using gradient and projection method
-          saliency = np.zeros((84, 84))
-          for i in range(84):
-            print(int(i/84*100)," % de la saliency map par gradient et projection", end='\r')
-            for j in range(84):
-              M = mask[126-i:210-i, 126-j:210-j]
-
-              delta = np.zeros(6)
-              sigma_blur = 3
-              for idx_action in range(6):
-                for idx_frame in range(4):
-                  A = cv2.GaussianBlur(self.state[0,:,:,idx_frame],(5,5), sigma_blur)
-                  dij_idx_frame = np.multiply(M, A-self.state[0,:,:,idx_frame])
-                  delta[idx_action] = delta[idx_action] + np.sum( np.multiply(J[idx_action][0,:,:,idx_frame], dij_idx_frame ))
-              saliency[i][j] = np.sqrt(np.sum(np.square(delta)))
-
-          plt.imshow(saliency, cmap='gray', vmin=0, vmax= np.amax(saliency))
-          plt.savefig("/home/hugo/saliency_maps/DQN-pong/saliency_maps_all2/gradient_and_projection/gradient_projection_saliency"+str(step_number)+".png")
-          print("saliency map par gradient and projection saved")
-
-          # Saliency maps using gradient only
-          saliency = np.zeros((84, 84))
-          for idx_action in range(6):
-            for idx_frame in range(4):
-              saliency = saliency + np.square(J[idx_action][0,:,:,idx_frame])
-          plt.imshow(saliency, cmap='gray', vmin=0, vmax=np.amax(saliency))
-          plt.savefig("/home/hugo/saliency_maps/DQN-pong/saliency_maps_all2/gradient/gradient_saliency"+str(step_number)+".png")
-          print("saliency map par gradient saved")
-
-
-      # Full resolution saliency map using perturbation method
-      if True:
-        pi = self._sess.run(self._net_outputs.q_values, {self.state_ph: self.state})
-        if step_number > 800 and step_number < 900:
+        # FULL RESOLUTION SALIENCY MAP
+        if step_number > 900 and step_number < 1000:
+          print("calcul saliency map")
           saliency_map = np.zeros((84,84))
           for x in range(84):
-            print(int(x/84*100), " % de la saliency map par perturbation", end='\r')
+            print("x image", x)
             for y in range(84):
-              pi_prime = self._sess.run(self._net_outputs.q_values, {self.state_ph: perturbation.phi(self.state, x, y, mask)})
+              pi_prime = self._sess.run(self._net_outputs.q_values, {self.state_ph: perturbation.phi(self.state, x, y)})
               saliency_map[x][y] = math.sqrt(np.sum( (pi[0]-pi_prime[0])**2 ))
 
           plt.imshow(saliency_map, cmap='gray', vmin=0, vmax=np.max(saliency_map))
-          plt.savefig("/home/hugo/saliency_maps/DQN-pong/saliency_maps_all2/perturbation/perturbation"+str(step_number)+".png")
-          print("saliency map par perturbation")
-      # Sauvegarde du state[3]
-      if True:
-        if step_number > 800 and step_number < 900:
+          plt.savefig("/home/hugo/saliency_maps/Rainbow-Tennis/saliency/perturbation_map"+str(step_number)+".png")
+
           plt.imshow(self.state[0,:,:,3], cmap='gray', vmin=0, vmax=255)
-          plt.savefig("/home/hugo/saliency_maps/DQN-pong/saliency_maps_all2/state/state"+str(step_number)+".png")
+          plt.savefig("/home/hugo/saliency_maps/Rainbow-Tennis/state/state"+str(step_number)+".png")
 
-
-
-
-      # QUARTER RESOLUTION SALIENCY MAP using perturbation method
-      if False:
-        if step_number > 900 and step_number < 950:
-
-          # pdb.set_trace()
-          # time.sleep(5)
+      # QUARTER RESOLUTION SALIENCY MAP
+      if True:
+        if step_number > 900 and step_number < 1000:
           print("calcul saliency map")
           saliency_map = np.zeros((21,21))
           for x in range(84):
             print("x image", x)
             for y in range(84):
               if (x-1)%4==0 and (y-1)%4==0:
-                # gradient saliency map
-                pass
-          # sys.exit()
-          # plt.imshow(self.state[0,:,:,0], cmap='gray', vmin=0, vmax=255)
-          # plt.show()
+                pi_prime = self._sess.run(self._net_outputs.q_values, {self.state_ph: perturbation.phi(self.state, x, y)})
+                saliency_map[int((x-1)/4)][int((y-1)/4)] = math.sqrt(np.sum( (pi[0]-pi_prime[0])**2 ))
+
           plt.imshow(saliency_map, cmap='gray', vmin=0, vmax=np.max(saliency_map))
-          # plt.show()
-          plt.savefig("/home/hugo/saliency_maps/Rainbow-pong5probabilities/saliency/perturbation_map"+str(step_number)+".png")
+          plt.savefig("/home/hugo/saliency_maps/Rainbow-Tennis/saliency/perturbation_map"+str(step_number)+".png")
 
           plt.imshow(self.state[0,:,:,3], cmap='gray', vmin=0, vmax=255)
-          plt.savefig("/home/hugo/saliency_maps/Rainbow-pong5probabilities/state/state"+str(step_number)+".png")
+          plt.savefig("/home/hugo/saliency_maps/Rainbow-Tennis/state/state"+str(step_number)+".png")
 
       return self._sess.run(self._q_argmax, {self.state_ph: self.state})
-
-
-  # def _select_action(self):
-  #   if self.eval_mode:
-  #     epsilon = self.epsilon_eval
-  #   else:
-  #     epsilon = self.epsilon_fn(
-  #         self.epsilon_decay_period,
-  #         self.training_steps,
-  #         self.min_replay_history,
-  #         self.epsilon_train)
-  #   if random.random() <= epsilon:
-  #     print("action aléatoire")
-  #     # Choose a random action with probability epsilon.
-  #     return random.randint(0, self.num_actions - 1)
-  #   else:
-  #     # Choose the action with highest Q-value at the current state.
-  #     return self._sess.run(self._q_argmax, {self.state_ph: self.state})
 
   def _train_step(self):
     """Runs a single training step.
