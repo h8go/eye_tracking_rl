@@ -240,20 +240,11 @@ class MyRunner(run_experiment.Runner):
 
     def _run_one_step(self, action, step_number):
         observation, reward, is_terminal, _ = self._environment.step(action)
-        # print("une step effectuée")
-        # print('screen_buffer', len(self._environment.screen_buffer))
-        # self._environment.render('human')
         if True:
             if step_number > 900 and step_number < 1000:
-                # self._environment.render('human')
                 image = self._environment.render('rgb_array')
                 plt.imshow(image)
                 plt.savefig("/home/hugo/saliency_maps/Rainbow-Tennis/render/render"+str(step_number)+".png")
-        # image = self._environment.render('rgb_array')
-        # plt.imshow(image)
-        # plt.savefig("/home/hugo/render1.png")
-        # sys.exit()
-        # pdb.set_trace()
         return observation, reward, is_terminal
 
 def create_dqn_agent(sess, environment, summary_writer=None):

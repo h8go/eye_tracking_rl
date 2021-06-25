@@ -445,8 +445,9 @@ class DQNAgent(object):
           plt.imshow(self.state[0,:,:,3], cmap='gray', vmin=0, vmax=255)
           plt.savefig("/home/hugo/saliency_maps/Rainbow-Tennis/state/state"+str(step_number)+".png")
 
-      # QUARTER RESOLUTION SALIENCY MAP
+
       if True:
+        # QUARTER RESOLUTION SALIENCY MAP
         if step_number > 900 and step_number < 1000:
           print("calcul saliency map")
           saliency_map = np.zeros((21,21))
