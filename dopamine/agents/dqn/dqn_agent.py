@@ -445,7 +445,7 @@ class DQNAgent(object):
             plt.imshow(saliency_map, cmap='gray', vmin=0, vmax=np.max(saliency_map))
             plt.savefig("/content/gdrive/My Drive/RL/saliency_maps/saliency/high_resolution/perturbation_map"+str(step_number)+".png")
 
-          # Saving the state
+          # Saving the last frame of the state
           if True:
             plt.imshow(self.state[0,:,:,3], cmap='gray', vmin=0, vmax=255)
             plt.savefig("/content/gdrive/My Drive/RL/saliency_maps/state/state"+str(step_number)+".png")
@@ -454,16 +454,15 @@ class DQNAgent(object):
       # QUARTER RESOLUTION SALIENCY MAP
       if True:
         if step_number == 100 or step_number == 500 or step_number == 900:
-
           saliency_map = np.zeros((21,21))
           for x in range(84):
             print("x image", x)
             for y in range(84):
               if (x-1)%4==0 and (y-1)%4==0: #dqn
                 pi_prime = self._sess.run(self._net_outputs.q_values, {self.state_ph: perturbation.phi(self.state, x, y)})
-                saliency_map[int((x-1)/4)][int((y-1)/4)] = math.sqrt(np.sum( (pi[0]-pi_prime[0])**2 ))
+                saliency_map[int((x-1)/4)][int((y-1)/4)] = math.sqrt(np.sum( (pi-pi_prime)**2 ))
 
-          # Saving the saliency
+          # Saving the last frame of the state
           if True:
             plt.imshow(saliency_map, cmap='gray', vmin=0, vmax=np.max(saliency_map))
             plt.savefig("/content/gdrive/My Drive/RL/saliency_maps/saliency/low_resolution/perturbation_map"+str(step_number)+".png")

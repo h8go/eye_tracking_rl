@@ -241,17 +241,13 @@ class MyRunner(run_experiment.Runner):
 
     def _run_one_step(self, action, step_number):
         observation, reward, is_terminal, _ = self._environment.step(action)
+
+        # Saving the render
         if True:
             if step_number == 100 or step_number == 500 or step_number == 900:
-                # self._environment.render('human')
                 image = self._environment.render('rgb_array')
                 plt.imshow(image)
                 plt.savefig("/content/gdrive/My Drive/RL/saliency_maps/render/render"+str(step_number)+".png")
-        # image = self._environment.render('rgb_array')
-        # plt.imshow(image)
-        # plt.savefig("/home/hugo/render1.png")
-        # sys.exit()
-        # pdb.set_trace()
         return observation, reward, is_terminal
 
 def create_dqn_agent(sess, environment, summary_writer=None):
